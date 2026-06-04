@@ -131,19 +131,6 @@
         <!-- Result Panel -->
         <div class="col-md-6">
 
-            <!-- Default state -->
-            <div class="card shadow-sm h-100 text-center d-flex
-                        align-items-center justify-content-center"
-                 id="default-card">
-                <div class="card-body">
-                    <i class="bi bi-truck fs-1 text-muted"></i>
-                    <p class="text-muted mt-3">
-                        Fill in the form and click<br>
-                        <strong>Predict Delivery Time</strong>
-                    </p>
-                </div>
-            </div>
-
             <!-- Loading -->
             <div class="card shadow-sm text-center p-5" id="loading-card"
                  style="display:none;">
@@ -238,7 +225,6 @@ async function predict() {
             document.getElementById('result-header').className    = `card-header text-white bg-${result.color}`;
         } else {
             alert('Error: ' + result.error);
-            document.getElementById('default-card').style.display = 'block';
         }
 
     } catch (err) {
@@ -251,7 +237,6 @@ async function predict() {
 function resetForm() {
     document.getElementById('result-card').style.display   = 'none';
     document.getElementById('loading-card').style.display  = 'none';
-    document.getElementById('default-card').style.display  = 'block';
 }
 </script>
 {% endblock %}
