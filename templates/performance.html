@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block title %}Model Performance{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h3 class="mb-4"><i class="bi bi-graph-up"></i> Model Performance</h3>
+
+    <!-- Best Model Highlight -->
+    <div class="alert alert-success d-flex align-items-center mb-4">
+        <i class="bi bi-trophy-fill fs-4 me-3"></i>
+        <div>
+            <strong>Best Model: XGBoost (Tuned - RandomizedSearchCV)</strong><br>
+            Test RMSE: 3.7771 min &nbsp;|&nbsp;
+            Test R²: 0.8393 &nbsp;|&nbsp;
+            Train-Test Gap: 0.0503 (Borderline — acceptable)
+        </div>
+    </div>
+
+    <!-- Model Comparison Table -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white">
+            <strong>📊 All Models — Baseline vs Tuned</strong>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Model</th>
+                            <th>Test MAE</th>
+                            <th>Test RMSE</th>
+                            <th>Test R²</th>
+                            <th>Train R²</th>
+                            <th>Gap</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-success">
+                            <td>1</td>
+                            <td><strong>⭐ XGBoost (Tuned - RandomizedSearchCV)</strong></td>
+                            <td>3.0353</td><td>3.7771</td><td>0.8393</td>
+                            <td>0.8896</td><td>0.0503</td>
+                            <td><span class="badge bg-warning">Borderline</span></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Random Forest (Tuned - RandomizedSearchCV)</td>
+                            <td>3.0351</td><td>3.7808</td><td>0.8390</td>
+                            <td>0.9017</td><td>0.0627</td>
+                            <td><span class="badge bg-warning">Borderline</span></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>XGBoost (Tuned - Optuna CV)</td>
+                            <td>3.0461</td><td>3.7851</td><td>0.8386</td>
+                            <td>0.8612</td><td>0.0226</td>
+                            <td><span class="badge bg-success">Good fit</span></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>XGBoost (Tuned - Optuna + Pruning)</td>
+                            <td>3.0395</td><td>3.7857</td><td>0.8386</td>
+                            <td>0.8955</td><td>0.0569</td>
+                            <td><span class="badge bg-warning">Borderline</span></td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>Random Forest (Tuned - Optuna)</td>
+                            <td>3.0377</td><td>3.7886</td><td>0.8384</td>
+                            <td>0.9121</td><td>0.0737</td>
+                            <td><span class="badge bg-warning">Borderline</span></td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>Random Forest (Baseline)</td>
+                            <td>3.0741</td><td>3.8474</td><td>0.8333</td>
+                            <td>0.9756</td><td>0.1423</td>
+                            <td><span class="badge bg-danger">Overfit</span></td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>XGBoost (Baseline)</td>
+                            <td>3.0878</td><td>3.8526</td><td>0.8328</td>
+                            <td>0.8716</td><td>0.0388</td>
+                            <td><span class="badge bg-success">Good fit</span></td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td>Decision Tree (Tuned - GridSearchCV)</td>
+                            <td>3.3277</td><td>4.2292</td><td>0.7986</td>
+                            <td>0.8900</td><td>0.0914</td>
+                            <td><span class="badge bg-warning">Borderline</span></td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td>Decision Tree (Baseline)</td>
+                            <td>4.0257</td><td>5.2547</td><td>0.6890</td>
+                            <td>1.0000</td><td>0.3110</td>
+                            <td><span class="badge bg-danger">Overfit</span></td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td>Linear Regression (Baseline)</td>
+                            <td>4.7470</td><td>5.9342</td><td>0.6034</td>
+                            <td>0.5983</td><td>-0.0051</td>
+                            <td><span class="badge bg-success">Good fit</span></td>
+                        </tr>
+                        <tr>
+                            <td>11</td>
+                            <td>Linear Regression (Tuned - Ridge)</td>
+                            <td>4.7504</td><td>5.9377</td><td>0.6029</td>
+                            <td>0.5977</td><td>-0.0048</td>
+                            <td><span class="badge bg-success">Good fit</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metric Explanation -->
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card kpi-card p-4 h-100">
+                <h6 class="text-primary"><i class="bi bi-bullseye"></i> What is RMSE?</h6>
+                <p class="text-muted small">
+                    Root Mean Square Error — measures average prediction
+                    error in minutes. Lower is better.<br><br>
+                    <strong>3.7771 min</strong> means predictions are
+                    off by ~3.78 minutes on average.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card kpi-card p-4 h-100">
+                <h6 class="text-success"><i class="bi bi-percent"></i> What is R²?</h6>
+                <p class="text-muted small">
+                    R-squared — measures how much variance the model
+                    explains. Higher is better (max 1.0).<br><br>
+                    <strong>0.8393</strong> means the model explains
+                    83.93% of delivery time variation.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card kpi-card p-4 h-100">
+                <h6 class="text-warning"><i class="bi bi-bar-chart"></i> What is MAE?</h6>
+                <p class="text-muted small">
+                    Mean Absolute Error — average absolute difference
+                    between predicted and actual. Lower is better.<br><br>
+                    <strong>3.0353 min</strong> means on average the
+                    model is 3 minutes off.
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

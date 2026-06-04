@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% block title %}Predict — DeliveryPredict AI{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3 class="mb-4"><i class="bi bi-stopwatch"></i> Predict Delivery Time</h3>
+
+    <div class="row g-4">
+
+        <!-- Input Form -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <strong>📋 Enter Delivery Conditions</strong>
+                </div>
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">City</label>
+                            <select class="form-select" id="city">
+                                <option value="Metropolitian">Metropolitian</option>
+                                <option value="Urban">Urban</option>
+                                <option value="Semi-Urban">Semi-Urban</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Weather</label>
+                            <select class="form-select" id="weather_conditions">
+                                <option value="Sunny">Sunny</option>
+                                <option value="Cloudy">Cloudy</option>
+                                <option value="Fog">Fog</option>
+                                <option value="Stormy">Stormy</option>
+                                <option value="Sandstorms">Sandstorms</option>
+                                <option value="Windy">Windy</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Road Traffic</label>
+                            <select class="form-select" id="road_traffic_density">
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Jam">Jam</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Type of Order</label>
+                            <select class="form-select" id="type_of_order">
+                                <option value="Snack">Snack</option>
+                                <option value="Meal">Meal</option>
+                                <option value="Drinks">Drinks</option>
+                                <option value="Buffet">Buffet</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Vehicle Type</label>
+                            <select class="form-select" id="type_of_vehicle">
+                                <option value="motorcycle">Motorcycle</option>
+                                <option value="scooter">Scooter</option>
+                                <option value="electric_scooter">Electric Scooter</option>
+                                <option value="bicycle">Bicycle</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Festival</label>
+                            <select class="form-select" id="festival">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Prep Time (min)</label>
+                            <input type="number" class="form-control"
+                                   id="prep_time_min" value="10" min="0" max="30">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Distance (km)</label>
+                            <input type="number" class="form-control"
+                                   id="distance_km" value="5.0" step="0.1" min="0">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Order Hour (0–23)</label>
+                            <input type="number" class="form-control"
+                                   id="order_hour" value="12" min="0" max="23">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Multiple Deliveries</label>
+                            <input type="number" class="form-control"
+                                   id="multiple_deliveries" value="0" min="0" max="3">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Rider Age</label>
+                            <input type="number" class="form-control"
+                                   id="delivery_person_age" value="28" min="18" max="60">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Rider Rating</label>
+                            <input type="number" class="form-control"
+                                   id="delivery_person_ratings" value="4.5"
+                                   step="0.1" min="1" max="5">
+                        </div>
+
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button class="btn btn-primary btn-lg" onclick="predict()">
+                            <i class="bi bi-lightning"></i> Predict Delivery Time
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="resetForm()">
+                            Reset
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Panel -->
+        <div class="col-md-6">
+
+            <!-- Default state -->
+            <div class="card shadow-sm h-100 text-center d-flex
+                        align-items-center justify-content-center"
+                 id="default-card">
+                <div class="card-body">
+                    <i class="bi bi-truck fs-1 text-muted"></i>
+                    <p class="text-muted mt-3">
+                        Fill in the form and click<br>
+                        <strong>Predict Delivery Time</strong>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div class="card shadow-sm text-center p-5" id="loading-card"
+                 style="display:none;">
+                <div class="spinner-border text-primary mx-auto"></div>
+                <p class="mt-3 text-muted">Predicting...</p>
+            </div>
+
+            <!-- Result -->
+            <div class="card shadow-sm" id="result-card" style="display:none;">
+                <div class="card-header text-white" id="result-header">
+                    <strong>📦 Prediction Result</strong>
+                </div>
+                <div class="card-body text-center py-5">
+                    <div class="display-1 fw-bold" id="result-time">--</div>
+                    <div class="lead text-muted">minutes</div>
+                    <div class="mt-3">
+                        <span class="badge fs-5 p-3" id="result-badge">--</span>
+                    </div>
+                    <hr>
+                    <div class="row mt-3 text-start">
+                        <div class="col-6">
+                            <small class="text-muted">Model</small>
+                            <div class="fw-bold">XGBoost</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">Model RMSE</small>
+                            <div class="fw-bold">±3.78 min</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function predict() {
+    document.getElementById('default-card').style.display  = 'none';
+    document.getElementById('loading-card').style.display  = 'block';
+    document.getElementById('result-card').style.display   = 'none';
+
+    const hour      = parseInt(document.getElementById('order_hour').value);
+    const today     = new Date();
+    const dayOfWeek = today.getDay();
+    const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6) ? 1 : 0;
+
+    let peakHour = 'Off-Peak';
+    if (hour >= 8  && hour <= 11) peakHour = 'Morning Rush';
+    if (hour >= 17 && hour <= 23) peakHour = 'Evening Peak';
+
+    const payload = {
+        delivery_person_age         : document.getElementById('delivery_person_age').value,
+        delivery_person_ratings     : document.getElementById('delivery_person_ratings').value,
+        restaurant_latitude         : 26.5,
+        restaurant_longitude        : 80.3,
+        delivery_location_latitude  : 26.6,
+        delivery_location_longitude : 80.4,
+        weather_conditions          : document.getElementById('weather_conditions').value,
+        road_traffic_density        : document.getElementById('road_traffic_density').value,
+        vehicle_condition           : 1,
+        type_of_order               : document.getElementById('type_of_order').value,
+        type_of_vehicle             : document.getElementById('type_of_vehicle').value,
+        multiple_deliveries         : document.getElementById('multiple_deliveries').value,
+        festival                    : document.getElementById('festival').value,
+        city                        : document.getElementById('city').value,
+        prep_time_min               : document.getElementById('prep_time_min').value,
+        order_hour                  : hour,
+        day_of_week                 : dayOfWeek,
+        is_weekend                  : isWeekend,
+        peak_hour                   : peakHour,
+        distance_km                 : document.getElementById('distance_km').value
+    };
+
+    try {
+        const res    = await fetch('/api/predict', {
+            method  : 'POST',
+            headers : { 'Content-Type': 'application/json' },
+            body    : JSON.stringify(payload)
+        });
+        const result = await res.json();
+
+        document.getElementById('loading-card').style.display = 'none';
+
+        if (result.success) {
+            document.getElementById('result-card').style.display  = 'block';
+            document.getElementById('result-time').textContent    = result.prediction;
+            document.getElementById('result-badge').textContent   = result.icon + ' ' + result.status;
+            document.getElementById('result-badge').className     = `badge fs-5 p-3 bg-${result.color}`;
+            document.getElementById('result-header').className    = `card-header text-white bg-${result.color}`;
+        } else {
+            alert('Error: ' + result.error);
+            document.getElementById('default-card').style.display = 'block';
+        }
+
+    } catch (err) {
+        document.getElementById('loading-card').style.display  = 'none';
+        document.getElementById('default-card').style.display  = 'block';
+        alert('Connection error: ' + err.message);
+    }
+}
+
+function resetForm() {
+    document.getElementById('result-card').style.display   = 'none';
+    document.getElementById('loading-card').style.display  = 'none';
+    document.getElementById('default-card').style.display  = 'block';
+}
+</script>
+{% endblock %}

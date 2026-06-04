@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Delivery Time Predictor{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body      { background-color: #f8f9fa; }
+        .navbar   { background: linear-gradient(135deg, #1a1a2e, #16213e); }
+        .nav-link { color: #ccc !important; font-weight: 500; }
+        .nav-link:hover, .nav-link.active { color: #fff !important; }
+        .hero     { background: linear-gradient(135deg, #1a1a2e, #0f3460);
+                    color: white; padding: 80px 0; }
+        .kpi-card { border: none; border-radius: 12px;
+                    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+                    transition: transform 0.2s; }
+        .kpi-card:hover { transform: translateY(-3px); }
+        footer    { background: #1a1a2e; color: #aaa; padding: 20px 0; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand text-white fw-bold" href="/">
+            <i class="bi bi-truck"></i> DeliveryPredict AI
+        </a>
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/' %}active{% endif %}"
+                       href="/"><i class="bi bi-house"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/predict' %}active{% endif %}"
+                       href="/predict"><i class="bi bi-stopwatch"></i> Predict</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/performance' %}active{% endif %}"
+                       href="/performance"><i class="bi bi-graph-up"></i> Performance</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/features' %}active{% endif %}"
+                       href="/features"><i class="bi bi-bar-chart"></i> Features</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/about' %}active{% endif %}"
+                       href="/about"><i class="bi bi-info-circle"></i> About</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<footer class="mt-5">
+    <div class="container text-center">
+        <p class="mb-0">
+            Built with Flask · XGBoost · Bootstrap 5 &nbsp;|&nbsp;
+            Final Year Project © 2024
+        </p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

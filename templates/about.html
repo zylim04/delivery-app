@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}About{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h3 class="mb-4"><i class="bi bi-info-circle"></i> About This Project</h3>
+
+    <div class="row g-4">
+
+        <!-- Project Overview -->
+        <div class="col-md-8">
+            <div class="card shadow-sm p-4 mb-4">
+                <h5 class="text-primary">📌 Project Overview</h5>
+                <p>This system predicts food delivery time using machine
+                learning. It was developed as a Final Year Project (FYP)
+                using a dataset of 42,592 real delivery records from
+                the Zomato platform.</p>
+                <p>The system uses XGBoost — a gradient boosting ensemble
+                model — tuned with RandomizedSearchCV and 5-fold
+                cross-validation to achieve a Test R² of 0.8393 and
+                Test RMSE of 3.78 minutes.</p>
+            </div>
+
+            <!-- Objectives -->
+            <div class="card shadow-sm p-4 mb-4">
+                <h5 class="text-primary">🎯 Research Objectives</h5>
+                <ol>
+                    <li class="mb-2">Identify key factors that influence
+                    food delivery time using feature importance analysis.</li>
+                    <li class="mb-2">Build a leakage-free preprocessing
+                    pipeline for reliable model training.</li>
+                    <li class="mb-2">Compare multiple ML models and select
+                    the best performing model.</li>
+                    <li class="mb-2">Deploy the best model as a web-based
+                    prediction system.</li>
+                </ol>
+            </div>
+
+            <!-- Methodology -->
+            <div class="card shadow-sm p-4 mb-4">
+                <h5 class="text-primary">🔬 Methodology</h5>
+                <div class="row g-3 text-center">
+                    <div class="col-md-2">
+                        <div class="badge bg-primary p-2 w-100">EDA</div>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-center
+                                justify-content-center text-muted">→</div>
+                    <div class="col-md-2">
+                        <div class="badge bg-primary p-2 w-100">Cleaning</div>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-center
+                                justify-content-center text-muted">→</div>
+                    <div class="col-md-2">
+                        <div class="badge bg-primary p-2 w-100">Feature Eng.</div>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-center
+                                justify-content-center text-muted">→</div>
+                    <div class="col-md-2">
+                        <div class="badge bg-primary p-2 w-100">Modelling</div>
+                    </div>
+                </div>
+                <p class="text-muted small mt-3">
+                    The pipeline follows CRISP-DM methodology with strict
+                    separation of training and test data to prevent
+                    data leakage.
+                </p>
+            </div>
+        </div>
+
+        <!-- Tech Stack -->
+        <div class="col-md-4">
+            <div class="card shadow-sm p-4 mb-4">
+                <h5 class="text-primary">🛠 Tools Used</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <span class="badge bg-warning text-dark me-2">ML</span>
+                        XGBoost, Random Forest, Decision Tree,
+                        Linear Regression
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">Tuning</span>
+                        RandomizedSearchCV, Optuna
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-info me-2">Pipeline</span>
+                        scikit-learn, pandas, numpy
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-primary me-2">Web</span>
+                        Flask, Bootstrap 5, Jinja2
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-secondary me-2">Notebook</span>
+                        Jupyter Notebook, VS Code
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Dataset Info -->
+            <div class="card shadow-sm p-4 mb-4">
+                <h5 class="text-primary">📂 Dataset</h5>
+                <ul class="list-unstyled small text-muted">
+                    <li><strong>Source:</strong> Zomato Delivery Dataset</li>
+                    <li><strong>Total rows:</strong> 45,584</li>
+                    <li><strong>After cleaning:</strong> 42,592</li>
+                    <li><strong>Features:</strong> 20 input variables</li>
+                    <li><strong>Target:</strong> time_taken_min</li>
+                    <li><strong>Train split:</strong> 80% (34,073 rows)</li>
+                    <li><strong>Test split:</strong> 20% (8,519 rows)</li>
+                </ul>
+            </div>
+
+            <!-- Best Model -->
+            <div class="card shadow-sm p-4">
+                <h5 class="text-primary">🏆 Best Model</h5>
+                <ul class="list-unstyled small text-muted">
+                    <li><strong>Model:</strong> XGBoost</li>
+                    <li><strong>Tuning:</strong> RandomizedSearchCV</li>
+                    <li><strong>CV:</strong> 5-fold</li>
+                    <li><strong>Test RMSE:</strong> 3.7771 min</li>
+                    <li><strong>Test R²:</strong> 0.8393</li>
+                    <li><strong>Train-Test Gap:</strong> 0.0503</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

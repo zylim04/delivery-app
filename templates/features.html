@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Feature Importance{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h3 class="mb-4">
+        <i class="bi bi-bar-chart"></i> Feature Importance
+    </h3>
+
+    <div class="row g-4">
+
+        <div class="col-md-8">
+            <div class="card shadow-sm p-4">
+                <h5>Top Features Affecting Delivery Time</h5>
+                <canvas id="featureChart" height="400"></canvas>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-4 h-100">
+                <h5 class="text-primary">🔍 Key Findings</h5>
+                <ul class="small text-muted">
+                    <li class="mb-2">
+                        <strong>distance_km</strong> is the strongest
+                        predictor — longer distances mean longer delivery.
+                    </li>
+                    <li class="mb-2">
+                        <strong>delivery_person_ratings</strong> — higher
+                        rated riders tend to deliver faster.
+                    </li>
+                    <li class="mb-2">
+                        <strong>prep_time_min</strong> — restaurant
+                        preparation time directly adds to total time.
+                    </li>
+                    <li class="mb-2">
+                        <strong>multiple_deliveries</strong> — riders
+                        handling multiple orders take longer.
+                    </li>
+                    <li class="mb-2">
+                        <strong>road_traffic_density</strong> — Jam and
+                        High traffic significantly increase delivery time.
+                    </li>
+                </ul>
+                <hr>
+                <p class="small text-muted">
+                    Feature importance was computed using a combination
+                    of Random Forest importance scores and Mutual
+                    Information (hybrid selection).
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const data = {{ data | safe }};
+
+const ctx = document.getElementById('featureChart').getContext('2d');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: data.features,
+        datasets: [{
+            label: 'Importance Score',
+            data: data.scores,
+            backgroundColor: data.scores.map((s, i) =>
+                i === 0 ? '#198754' :
+                i < 3   ? '#0d6efd' : '#6c757d'
+            ),
+            borderRadius: 4
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: ctx => ' Score: ' + ctx.raw.toFixed(4)
+                }
+            }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                title: { display: true, text: 'Importance Score' }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

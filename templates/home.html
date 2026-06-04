@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Home — DeliveryPredict AI{% endblock %}
+
+{% block content %}
+<div class="hero text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-3">
+            🚚 Delivery Time Predictor
+        </h1>
+        <p class="lead mb-4">
+            ML-powered delivery time prediction using XGBoost.<br>
+            Trained on 42,592 real delivery records.
+        </p>
+        <a href="/predict" class="btn btn-danger btn-lg me-3">
+            <i class="bi bi-stopwatch"></i> Predict Now
+        </a>
+        <a href="/performance" class="btn btn-outline-light btn-lg">
+            <i class="bi bi-graph-up"></i> View Performance
+        </a>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <div class="row g-4 text-center">
+        <div class="col-md-3">
+            <div class="card kpi-card p-4">
+                <div class="fs-1 fw-bold text-primary">42,592</div>
+                <div class="text-muted mt-1">Training Records</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-4">
+                <div class="fs-1 fw-bold text-success">83.93%</div>
+                <div class="text-muted mt-1">Model Accuracy (R²)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-4">
+                <div class="fs-1 fw-bold text-warning">3.78</div>
+                <div class="text-muted mt-1">Test RMSE (minutes)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-4">
+                <div class="fs-1 fw-bold text-danger">26.4</div>
+                <div class="text-muted mt-1">Avg Delivery Time (min)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5 mb-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card kpi-card p-4 h-100">
+                <h5><i class="bi bi-cpu text-primary"></i> Best Model</h5>
+                <p class="text-muted">XGBoost tuned with RandomizedSearchCV
+                and 5-fold cross-validation on 42,592 delivery records.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card kpi-card p-4 h-100">
+                <h5><i class="bi bi-shield-check text-success"></i> Leakage-Free</h5>
+                <p class="text-muted">All preprocessing and feature selection
+                performed strictly on training data only.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card kpi-card p-4 h-100">
+                <h5><i class="bi bi-lightning text-warning"></i> Real-Time</h5>
+                <p class="text-muted">Enter delivery conditions and get an
+                instant prediction in seconds.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
