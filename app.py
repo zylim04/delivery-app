@@ -300,6 +300,11 @@ def trends():
 def map_page():
     return render_template('map.html')
 
+
+@app.route('/chatbot')
+def chatbot():
+    return render_template('chatbot.html')
+
 @app.route('/api/chat', methods=['POST'])
 def chat():
     try:
@@ -353,7 +358,7 @@ Current prediction context:
 - Prep time: {inputs.get('prep_time_min', 'N/A')} min"""
 
         response = client.chat.completions.create(
-            model    = 'llama3-8b-8192',
+            model    = 'llama-3.3-70b-versatile',
             messages = [
                 {'role': 'system', 'content': context},
                 {'role': 'user',   'content': user_msg}
@@ -366,6 +371,7 @@ Current prediction context:
         return jsonify({'success': True, 'reply': reply})
 
     except Exception as e:
+        print("CHAT ERROR:", str(e))
         return jsonify({'success': False, 'error': str(e)}), 400
 
 # ── Prediction API ────────────────────────────────────────────────
