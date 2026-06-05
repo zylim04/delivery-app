@@ -123,7 +123,131 @@
                 </ul>
             </div>
         </div>
-
     </div>
 </div>
+<!-- Deployment Architecture Diagram -->
+        <div class="col-12 mt-2">
+            <div class="card shadow-sm p-4">
+                <h5 class="text-primary mb-4">
+                    <i class="bi bi-diagram-3"></i>
+                    Deployment Architecture
+                </h5>
+                <div class="text-center">
+                    <div class="row g-3 align-items-center justify-content-center">
+
+                        <!-- User -->
+                        <div class="col-md-2">
+                            <div class="card p-3 bg-light text-center border-primary border-2">
+                                <div class="fs-2">👤</div>
+                                <div class="small fw-bold mt-1">User</div>
+                                <div class="small text-muted">Browser</div>
+                            </div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div class="col-md-1 text-center">
+                            <div class="fs-4 text-primary">→</div>
+                            <div class="small text-muted">HTTPS</div>
+                        </div>
+
+                        <!-- Flask -->
+                        <div class="col-md-2">
+                            <div class="card p-3 bg-primary text-white text-center">
+                                <div class="fs-2">🌐</div>
+                                <div class="small fw-bold mt-1">Flask</div>
+                                <div class="small">Web Server</div>
+                                <div class="small opacity-75">Render.com</div>
+                            </div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div class="col-md-1 text-center">
+                            <div class="fs-4 text-primary">→</div>
+                            <div class="small text-muted">Predict</div>
+                        </div>
+
+                        <!-- ML Model -->
+                        <div class="col-md-2">
+                            <div class="card p-3 bg-success text-white text-center">
+                                <div class="fs-2">🤖</div>
+                                <div class="small fw-bold mt-1">XGBoost</div>
+                                <div class="small">ML Model</div>
+                                <div class="small opacity-75">.pkl file</div>
+                            </div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div class="col-md-1 text-center">
+                            <div class="fs-4 text-primary">→</div>
+                            <div class="small text-muted">Chat</div>
+                        </div>
+
+                        <!-- Groq AI -->
+                        <div class="col-md-2">
+                            <div class="card p-3 bg-warning text-dark text-center">
+                                <div class="fs-2">💬</div>
+                                <div class="small fw-bold mt-1">Groq AI</div>
+                                <div class="small">Llama 3 API</div>
+                                <div class="small opacity-75">AI Assistant</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Bottom row -->
+                    <div class="row g-3 justify-content-center mt-2">
+                        <div class="col-md-2">
+                            <div class="card p-3 bg-info text-white text-center">
+                                <div class="fs-2">🗺️</div>
+                                <div class="small fw-bold mt-1">Leaflet.js</div>
+                                <div class="small">Map & Distance</div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="card p-3 bg-secondary text-white text-center">
+                                <div class="fs-2">📊</div>
+                                <div class="small fw-bold mt-1">Chart.js</div>
+                                <div class="small">Visualisation</div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="card p-3 bg-dark text-white text-center">
+                                <div class="fs-2">🐙</div>
+                                <div class="small fw-bold mt-1">GitHub</div>
+                                <div class="small">Code Repository</div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="card p-3 text-white text-center"
+                                 style="background:#6f42c1;">
+                                <div class="fs-2">☁️</div>
+                                <div class="small fw-bold mt-1">Render.com</div>
+                                <div class="small">Cloud Hosting</div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="card p-3 bg-danger text-white text-center">
+                                <div class="fs-2">📓</div>
+                                <div class="small fw-bold mt-1">Jupyter</div>
+                                <div class="small">ML Development</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Flow description -->
+                    <div class="mt-4 p-3 bg-light rounded text-start">
+                        <strong class="small">System Flow:</strong>
+                        <span class="small text-muted ms-2">
+                            User opens browser →
+                            Sends request via HTTPS to Flask on Render →
+                            Flask routes to prediction API →
+                            XGBoost model processes input and returns prediction →
+                            Result displayed to user →
+                            User can ask AI assistant via Groq Llama 3 API →
+                            User can calculate distance using Leaflet.js map
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
 {% endblock %}
