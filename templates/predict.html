@@ -85,25 +85,73 @@
                         <div class="col-md-6">
                             <label class="form-label">Distance (km)</label>
                             <input type="number" class="form-control"
-                                   id="distance_km" value="5.0" step="0.1" min="0" max="25">
+                                   id="distance_km" value="5.0"
+                                   step="0.1" min="0" max="25">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Order Hour (0–23)</label>
-                            <input type="number" class="form-control"
-                                   id="order_hour" value="12" min="0" max="23">
+                            <label class="form-label">Order Hour</label>
+                            <select class="form-select" id="order_hour"
+                                    onchange="updatePeakHour(this.value)">
+                                <option value="8">08:00 (8 AM)</option>
+                                <option value="9">09:00 (9 AM)</option>
+                                <option value="10">10:00 (10 AM)</option>
+                                <option value="11">11:00 (11 AM)</option>
+                                <option value="12" selected>12:00 (12 PM)</option>
+                                <option value="13">13:00 (1 PM)</option>
+                                <option value="14">14:00 (2 PM)</option>
+                                <option value="15">15:00 (3 PM)</option>
+                                <option value="16">16:00 (4 PM)</option>
+                                <option value="17">17:00 (5 PM)</option>
+                                <option value="18">18:00 (6 PM)</option>
+                                <option value="19">19:00 (7 PM)</option>
+                                <option value="20">20:00 (8 PM)</option>
+                                <option value="21">21:00 (9 PM)</option>
+                                <option value="22">22:00 (10 PM)</option>
+                                <option value="23">23:00 (11 PM)</option>
+                            </select>
+                            <small class="text-muted">Delivery hours: 8am – 11pm</small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Day of Week</label>
+                            <select class="form-select" id="day_of_week_select">
+                                <option value="0">Sunday</option>
+                                <option value="1">Monday</option>
+                                <option value="2">Tuesday</option>
+                                <option value="3">Wednesday</option>
+                                <option value="4">Thursday</option>
+                                <option value="5">Friday</option>
+                                <option value="6">Saturday</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Peak Hour</label>
+                            <div id="peak_hour_display"
+                                 class="form-control text-center fw-bold"
+                                 style="background:#f0fff4;
+                                        color:#198754;
+                                        cursor:default;">
+                                Off-Peak (12–16)
+                            </div>
+                            <small class="text-muted">
+                                Auto-computed from order hour
+                            </small>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Multiple Deliveries</label>
                             <input type="number" class="form-control"
-                                   id="multiple_deliveries" value="0" min="0" max="3">
+                                   id="multiple_deliveries" value="0"
+                                   min="0" max="3">
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Rider Age</label>
                             <input type="number" class="form-control"
-                                   id="delivery_person_age" value="28" min="18" max="60">
+                                   id="delivery_person_age" value="28"
+                                   min="18" max="60">
                         </div>
 
                         <div class="col-md-6">
@@ -116,10 +164,13 @@
                     </div>
 
                     <div class="d-grid gap-2 mt-4">
-                        <button class="btn btn-primary btn-lg" onclick="predict()">
-                            <i class="bi bi-lightning"></i> Predict Delivery Time
+                        <button class="btn btn-primary btn-lg"
+                                onclick="predict()">
+                            <i class="bi bi-lightning"></i>
+                            Predict Delivery Time
                         </button>
-                        <button class="btn btn-outline-secondary" onclick="resetForm()">
+                        <button class="btn btn-outline-secondary"
+                                onclick="resetForm()">
                             Reset
                         </button>
                     </div>
@@ -139,7 +190,8 @@
             </div>
 
             <!-- Result -->
-            <div class="card shadow-sm" id="result-card" style="display:none;">
+            <div class="card shadow-sm" id="result-card"
+                 style="display:none;">
                 <div class="card-header text-white" id="result-header">
                     <strong>📦 Prediction Result</strong>
                 </div>
@@ -170,68 +222,92 @@
 
 {% block scripts %}
 <script>
-// Auto-fill distance from map page if passed in URL
-window.onload = function() {
+
+// ── Update peak hour display ──────────────────────────────────────
+function updatePeakHour(val) {
+    const hour    = parseInt(val !== undefined ? val :
+                    document.getElementById('order_hour').value);
+    const display = document.getElementById('peak_hour_display');
+    if (isNaN(hour)) return;
+
+    if (hour >= 8 && hour <= 11) {
+        display.textContent      = 'Morning Rush (8–11)';
+        display.style.background = '#fff8e1';
+        display.style.color      = '#d97706';
+    } else if (hour >= 17 && hour <= 23) {
+        display.textContent      = 'Evening Peak (17–23)';
+        display.style.background = '#fff1f0';
+        display.style.color      = '#dc3545';
+    } else {
+        display.textContent      = 'Off-Peak (12–16)';
+        display.style.background = '#f0fff4';
+        display.style.color      = '#198754';
+    }
+}
+
+// ── On page load ──────────────────────────────────────────────────
+window.addEventListener('load', function() {
     const params   = new URLSearchParams(window.location.search);
     const distance = params.get('distance');
     if (distance) {
-        const field        = document.getElementById('distance_km');
-        field.value        = parseFloat(distance).toFixed(2);
-        field.style.border = '2px solid #198754';
+        const field            = document.getElementById('distance_km');
+        field.value            = parseFloat(distance).toFixed(2);
+        field.style.border     = '2px solid #198754';
         field.style.background = '#f0fff4';
 
-        // Show a notice so user knows distance was auto-filled
-        const notice = document.createElement('div');
-        notice.className   = 'alert alert-success alert-dismissible mt-2 p-2 small';
-        notice.innerHTML   =
+        const notice     = document.createElement('div');
+        notice.className = 'alert alert-success alert-dismissible mt-2 p-2 small';
+        notice.innerHTML =
             '<i class="bi bi-check-circle"></i> Distance auto-filled from map: <strong>' +
             parseFloat(distance).toFixed(2) + ' km</strong>' +
-            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+            '<button type="button" class="btn-close" ' +
+            'data-bs-dismiss="alert"></button>';
         field.parentNode.appendChild(notice);
     }
-};
 
+    const today = new Date().getDay();
+    document.getElementById('day_of_week_select').value = today;
+
+    const currentHour = new Date().getHours();
+    const startHour   = Math.min(23, Math.max(8, currentHour));
+    document.getElementById('order_hour').value = startHour;
+    updatePeakHour(startHour);
+});
+
+// ── Predict function ──────────────────────────────────────────────
 async function predict() {
-    // Clear any previous warning message
     const existingMsg = document.getElementById('warning-msg');
     if (existingMsg) existingMsg.remove();
 
-    // Reset result time font size in case warning changed it
     document.getElementById('result-time').style.fontSize = '';
+    document.getElementById('loading-card').style.display = 'block';
+    document.getElementById('result-card').style.display  = 'none';
 
-    document.getElementById('loading-card').style.display  = 'block';
-    document.getElementById('result-card').style.display   = 'none';
-
-    // Validate distance is within training range
     const distance = parseFloat(document.getElementById('distance_km').value);
     if (distance > 25) {
         document.getElementById('loading-card').style.display = 'none';
         document.getElementById('result-card').style.display  = 'block';
+        document.getElementById('result-header').innerHTML    = '<strong>⚠️ Warning</strong>';
         document.getElementById('result-header').className    = 'card-header text-white bg-warning';
         document.getElementById('result-time').textContent    = '⚠️';
         document.getElementById('result-time').style.fontSize = '3rem';
         document.getElementById('result-badge').textContent   = 'Distance Out of Range';
         document.getElementById('result-badge').className     = 'badge fs-6 p-3 bg-warning text-dark';
-        document.getElementById('result-header').innerHTML    = '<strong>⚠️ Warning</strong>';
 
-        // Add warning message below badge
-        const existingMsg = document.getElementById('warning-msg');
-        if (existingMsg) existingMsg.remove();
-        const msg = document.createElement('div');
+        const msg     = document.createElement('div');
         msg.id        = 'warning-msg';
         msg.className = 'alert alert-warning mt-3 text-start small';
-        msg.innerHTML =
-            '<strong>Distance ' + distance + ' km is outside the training range.</strong><br>' +
-            '99% of training data is below 21 km. Predictions above 25 km may be unreliable.<br><br>' +
-            'Please select locations closer together on the map or manually enter a distance between 1–25 km.';
+        msg.innerHTML = '<strong>Distance ' + distance +
+                        ' km is outside the training range.</strong><br>' +
+                        '99% of training data is below 21 km. ' +
+                        'Predictions above 25 km may be unreliable.<br><br>' +
+                        'Please enter a distance between 1–25 km.';
         document.querySelector('.card-body.text-center').appendChild(msg);
         return;
     }
-  
 
     const hour      = parseInt(document.getElementById('order_hour').value);
-    const today     = new Date();
-    const dayOfWeek = today.getDay();
+    const dayOfWeek = parseInt(document.getElementById('day_of_week_select').value);
     const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6) ? 1 : 0;
 
     let peakHour = 'Off-Peak';
@@ -239,29 +315,27 @@ async function predict() {
     if (hour >= 17 && hour <= 23) peakHour = 'Evening Peak';
 
     const payload = {
-    delivery_person_age         : parseFloat(document.getElementById('delivery_person_age').value),
-    delivery_person_ratings     : parseFloat(document.getElementById('delivery_person_ratings').value),
-    restaurant_latitude         : 26.5,
-    restaurant_longitude        : 80.3,
-    delivery_location_latitude  : 26.6,
-    delivery_location_longitude : 80.4,
-    weather_conditions          : document.getElementById('weather_conditions').value,
-    road_traffic_density        : document.getElementById('road_traffic_density').value,
-    vehicle_condition           : 1,
-    type_of_order               : document.getElementById('type_of_order').value,
-    type_of_vehicle             : document.getElementById('type_of_vehicle').value,
-    multiple_deliveries         : parseFloat(document.getElementById('multiple_deliveries').value),
-    festival                    : document.getElementById('festival').value,
-    city                        : document.getElementById('city').value,
-    prep_time_min               : parseFloat(document.getElementById('prep_time_min').value),
-    order_hour                  : hour,
-    day_of_week                 : dayOfWeek,
-    is_weekend                  : isWeekend,
-    peak_hour                   : peakHour,
-    distance_km                 : parseFloat(document.getElementById('distance_km').value)
-  };
-
-    
+        delivery_person_age         : parseFloat(document.getElementById('delivery_person_age').value),
+        delivery_person_ratings     : parseFloat(document.getElementById('delivery_person_ratings').value),
+        restaurant_latitude         : 26.5,
+        restaurant_longitude        : 80.3,
+        delivery_location_latitude  : 26.6,
+        delivery_location_longitude : 80.4,
+        weather_conditions          : document.getElementById('weather_conditions').value,
+        road_traffic_density        : document.getElementById('road_traffic_density').value,
+        vehicle_condition           : 1,
+        type_of_order               : document.getElementById('type_of_order').value,
+        type_of_vehicle             : document.getElementById('type_of_vehicle').value,
+        multiple_deliveries         : parseFloat(document.getElementById('multiple_deliveries').value),
+        festival                    : document.getElementById('festival').value,
+        city                        : document.getElementById('city').value,
+        prep_time_min               : parseFloat(document.getElementById('prep_time_min').value),
+        order_hour                  : hour,
+        day_of_week                 : dayOfWeek,
+        is_weekend                  : isWeekend,
+        peak_hour                   : peakHour,
+        distance_km                 : distance
+    };
 
     try {
         const res    = await fetch('/api/predict', {
@@ -292,9 +366,13 @@ async function predict() {
     }
 }
 
+// ── Reset form ────────────────────────────────────────────────────
 function resetForm() {
-    document.getElementById('result-card').style.display   = 'none';
-    document.getElementById('loading-card').style.display  = 'none';
+    document.getElementById('result-card').style.display  = 'none';
+    document.getElementById('loading-card').style.display = 'none';
+    const existingMsg = document.getElementById('warning-msg');
+    if (existingMsg) existingMsg.remove();
 }
+
 </script>
 {% endblock %}

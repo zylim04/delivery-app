@@ -74,4 +74,84 @@
         </div>
     </div>
 </div>
+
+<!-- Mini Charts Section -->
+<div class="container mt-5 mb-5">
+    <h5 class="mb-4 fw-bold">📊 Dataset Overview</h5>
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card kpi-card p-4">
+                <h6 class="text-muted mb-3">
+                    Delivery Time Distribution
+                </h6>
+                <canvas id="distChart" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card kpi-card p-4">
+                <h6 class="text-muted mb-3">
+                    Avg Delivery Time by Traffic
+                </h6>
+                <canvas id="trafficChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+new Chart(document.getElementById('distChart'), {
+    type: 'bar',
+    data: {
+        labels: ['10–15', '16–20', '21–25', '26–30',
+                 '31–35', '36–40', '41–45', '46–54'],
+        datasets: [{
+            label: 'Deliveries',
+            data: [2100, 6800, 9200, 8900, 7400, 4200, 2800, 1200],
+            backgroundColor: [
+                '#198754','#198754','#ffc107',
+                '#ffc107','#fd7e14','#fd7e14',
+                '#dc3545','#dc3545'
+            ],
+            borderRadius: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { title: { display: true, text: 'Count' } },
+            x: { title: { display: true, text: 'Minutes' } }
+        }
+    }
+});
+
+new Chart(document.getElementById('trafficChart'), {
+    type: 'bar',
+    data: {
+        labels: ['Low', 'Medium', 'High', 'Jam'],
+        datasets: [{
+            label: 'Avg Time (min)',
+            data: [22.4, 26.1, 29.8, 34.2],
+            backgroundColor: [
+                '#198754', '#ffc107', '#fd7e14', '#dc3545'
+            ],
+            borderRadius: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: {
+                beginAtZero: false,
+                title: { display: true, text: 'Avg Time (min)' }
+            }
+        }
+    }
+});
+</script>
 {% endblock %}
