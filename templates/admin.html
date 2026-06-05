@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}Admin — Model Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h3 class="mb-4"><i class="bi bi-gear"></i> Admin — Model Management</h3>
+
+    <div class="row g-4">
+
+        <!-- Model Info -->
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4">
+                <h5 class="text-primary mb-3">
+                    <i class="bi bi-cpu"></i> Current Model
+                </h5>
+                <table class="table table-bordered small">
+                    <tr>
+                        <td class="fw-bold">Model</td>
+                        <td>{{ model_info.name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Test R²</td>
+                        <td>{{ model_info.test_r2 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Test RMSE</td>
+                        <td>{{ model_info.test_rmse }} min</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Test MAE</td>
+                        <td>{{ model_info.test_mae }} min</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Trained On</td>
+                        <td>{{ model_info.trained_on }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Features Used</td>
+                        <td>{{ model_info.features }} hybrid features</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Model File</td>
+                        <td><code>{{ model_info.file }}</code></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Model Actions -->
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 mb-4">
+                <h5 class="text-primary mb-3">
+                    <i class="bi bi-download"></i> Download Model
+                </h5>
+                <p class="text-muted small">
+                    Download the trained XGBoost model file for
+                    local use or backup.
+                </p>
+                <a href="/download-model" class="btn btn-success">
+                    <i class="bi bi-download"></i>
+                    Download best_model.pkl
+                </a>
+            </div>
+
+            <div class="card shadow-sm p-4 mb-4">
+                <h5 class="text-primary mb-3">
+                    <i class="bi bi-info-circle"></i> System Status
+                </h5>
+                <ul class="list-unstyled small">
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">Online</span>
+                        Flask Web Server
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">Loaded</span>
+                        XGBoost Model
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">Active</span>
+                        Groq AI API
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge bg-success me-2">Ready</span>
+                        Leaflet Map
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card shadow-sm p-4">
+                <h5 class="text-primary mb-3">
+                    <i class="bi bi-graph-up"></i> Model Performance Summary
+                </h5>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="fs-4 fw-bold text-success">
+                            {{ model_info.test_r2 }}
+                        </div>
+                        <div class="text-muted small">Test R²</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fs-4 fw-bold text-primary">
+                            {{ model_info.test_rmse }}
+                        </div>
+                        <div class="text-muted small">RMSE (min)</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fs-4 fw-bold text-warning">
+                            {{ model_info.test_mae }}
+                        </div>
+                        <div class="text-muted small">MAE (min)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Logs -->
+        <div class="col-12">
+            <div class="card shadow-sm p-4">
+                <h5 class="text-primary mb-3">
+                    <i class="bi bi-terminal"></i> Training Log Summary
+                </h5>
+                <div class="bg-dark text-success p-3 rounded"
+                     style="font-family:monospace; font-size:12px;">
+                    <div>[INFO] Dataset loaded: 45,584 rows, 20 columns</div>
+                    <div>[INFO] After cleaning: 42,592 rows</div>
+                    <div>[INFO] Train-test split: 34,073 train / 8,519 test</div>
+                    <div>[INFO] Feature engineering: 6 features created</div>
+                    <div>[INFO] Hybrid feature selection: 18 features selected</div>
+                    <div>[INFO] Baseline XGBoost — Test R²: 0.8328, RMSE: 3.8526</div>
+                    <div>[INFO] Tuning: RandomizedSearchCV, 50 iterations, cv=5</div>
+                    <div class="text-warning">
+                        [BEST] XGBoost Tuned — Test R²: 0.8393, RMSE: 3.7771
+                    </div>
+                    <div>[INFO] Model saved: best_model.pkl</div>
+                    <div>[INFO] Preprocessor saved: preprocessor.pkl</div>
+                    <div class="text-info">[STATUS] System ready for deployment</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

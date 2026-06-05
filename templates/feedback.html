@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block title %}Feedback{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h3 class="mb-4"><i class="bi bi-chat-dots"></i> Contact & Feedback</h3>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow-sm p-4">
+                <h5 class="text-primary mb-3">
+                    Share Your Feedback
+                </h5>
+                <p class="text-muted small mb-4">
+                    Help us improve the system by sharing your experience.
+                </p>
+
+                <!-- Rating -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Overall Rating</label>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-warning rating-btn"
+                                data-value="1" onclick="setRating(1)">
+                            ⭐ 1
+                        </button>
+                        <button class="btn btn-outline-warning rating-btn"
+                                data-value="2" onclick="setRating(2)">
+                            ⭐ 2
+                        </button>
+                        <button class="btn btn-outline-warning rating-btn"
+                                data-value="3" onclick="setRating(3)">
+                            ⭐ 3
+                        </button>
+                        <button class="btn btn-outline-warning rating-btn"
+                                data-value="4" onclick="setRating(4)">
+                            ⭐ 4
+                        </button>
+                        <button class="btn btn-outline-warning rating-btn"
+                                data-value="5" onclick="setRating(5)">
+                            ⭐ 5
+                        </button>
+                    </div>
+                    <input type="hidden" id="rating" value="">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Name</label>
+                    <input type="text" class="form-control"
+                           id="name" placeholder="Your name">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Email (optional)</label>
+                    <input type="email" class="form-control"
+                           id="email" placeholder="your@email.com">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Message</label>
+                    <textarea class="form-control" id="message"
+                              rows="4"
+                              placeholder="Tell us about your experience..."></textarea>
+                </div>
+
+                <button class="btn btn-primary w-100"
+                        onclick="submitFeedback()">
+                    <i class="bi bi-send"></i> Submit Feedback
+                </button>
+
+                <!-- Success message -->
+                <div class="alert alert-success mt-3"
+                     id="success-msg" style="display:none;">
+                    <i class="bi bi-check-circle"></i>
+                    Thank you for your feedback!
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="col-md-4">
+            <div class="card shadow-sm p-4 mb-4">
+                <h5 class="text-primary mb-3">
+                    <i class="bi bi-info-circle"></i> About This System
+                </h5>
+                <ul class="list-unstyled small text-muted">
+                    <li class="mb-2">
+                        <i class="bi bi-mortarboard text-primary me-2"></i>
+                        Final Year Project (FYP)
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-cpu text-success me-2"></i>
+                        XGBoost ML Model
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-database text-warning me-2"></i>
+                        42,592 delivery records
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-globe text-info me-2"></i>
+                        Deployed on Render.com
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card shadow-sm p-4">
+                <h5 class="text-primary mb-3">
+                    <i class="bi bi-star"></i> Rating Guide
+                </h5>
+                <ul class="list-unstyled small text-muted">
+                    <li>⭐ 1 — Poor</li>
+                    <li>⭐ 2 — Fair</li>
+                    <li>⭐ 3 — Good</li>
+                    <li>⭐ 4 — Very Good</li>
+                    <li>⭐ 5 — Excellent</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedRating = 0;
+
+function setRating(val) {
+    selectedRating = val;
+    document.getElementById('rating').value = val;
+    document.querySelectorAll('.rating-btn').forEach((btn, i) => {
+        btn.className = i < val
+            ? 'btn btn-warning rating-btn'
+            : 'btn btn-outline-warning rating-btn';
+    });
+}
+
+async function submitFeedback() {
+    const name    = document.getElementById('name').value.trim();
+    const email   = document.getElementById('email').value.trim();
+    const message = document.getElementById('message').value.trim();
+    const rating  = selectedRating;
+
+    if (!name) { alert('Please enter your name.'); return; }
+    if (!message) { alert('Please enter a message.'); return; }
+    if (!rating) { alert('Please select a rating.'); return; }
+
+    try {
+        const res    = await fetch('/api/feedback', {
+            method : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body   : JSON.stringify({ name, email, message, rating })
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            document.getElementById('success-msg').style.display = 'block';
+            document.getElementById('name').value    = '';
+            document.getElementById('email').value   = '';
+            document.getElementById('message').value = '';
+            selectedRating = 0;
+            document.querySelectorAll('.rating-btn').forEach(btn => {
+                btn.className = 'btn btn-outline-warning rating-btn';
+            });
+        }
+    } catch (err) {
+        alert('Error submitting feedback. Please try again.');
+    }
+}
+</script>
+{% endblock %}

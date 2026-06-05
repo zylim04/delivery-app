@@ -36,6 +36,65 @@
         </div>
     </div>
 
+    <!-- Filters -->
+    <div class="card shadow-sm p-3 mb-4">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-1">
+                <strong class="small"><i class="bi bi-funnel"></i> Filter:</strong>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-sm" id="filterCity"
+                        onchange="applyFilters()">
+                    <option value="all">All Cities</option>
+                    <option value="Metropolitian">Metropolitian</option>
+                    <option value="Urban">Urban</option>
+                    <option value="Semi-Urban">Semi-Urban</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-sm" id="filterTraffic"
+                        onchange="applyFilters()">
+                    <option value="all">All Traffic</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Jam">Jam</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-sm" id="filterWeather"
+                        onchange="applyFilters()">
+                    <option value="all">All Weather</option>
+                    <option value="Sunny">Sunny</option>
+                    <option value="Cloudy">Cloudy</option>
+                    <option value="Fog">Fog</option>
+                    <option value="Stormy">Stormy</option>
+                    <option value="Sandstorms">Sandstorms</option>
+                    <option value="Windy">Windy</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-sm" id="filterFestival"
+                        onchange="applyFilters()">
+                    <option value="all">All Periods</option>
+                    <option value="Yes">Festival</option>
+                    <option value="No">Non-Festival</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary btn-sm w-100"
+                        onclick="resetFilters()">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </button>
+            </div>
+            <div class="col-md-1 text-end">
+                <span class="badge bg-primary" id="filterCount">
+                    {{ stats.total }} rows
+                </span>
+            </div>
+        </div>
+    </div>
+
     <!-- Row 1: Traffic + Weather -->
     <div class="row g-4 mb-4">
         <div class="col-md-6">
@@ -201,17 +260,20 @@ const trafficCountData = {{ traffic_count | safe }};
 const hourData         = {{ hour_data | safe }};
 const dayData          = {{ day_data | safe }};
 
-// Color palettes
 const barColors = ['#0d6efd','#198754','#ffc107','#dc3545','#6f42c1','#0dcaf0'];
 const pieColors = ['#0d6efd','#198754','#ffc107','#dc3545'];
 
-function makeBar(id, data, label, customColors) {
-    new Chart(document.getElementById(id).getContext('2d'), {
+// Store all chart instances
+const charts = {};
+
+// ── Bar chart creator with destroy/recreate ───────────────────────
+function makeBar(id, data, customColors) {
+    if (charts[id]) charts[id].destroy();
+    charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
         type: 'bar',
         data: {
             labels: data.labels,
             datasets: [{
-                label: label,
                 data: data.values,
                 backgroundColor: customColors || barColors,
                 borderRadius: 5
@@ -230,8 +292,10 @@ function makeBar(id, data, label, customColors) {
     });
 }
 
+// ── Doughnut chart ────────────────────────────────────────────────
 function makePie(id, data) {
-    new Chart(document.getElementById(id).getContext('2d'), {
+    if (charts[id]) charts[id].destroy();
+    charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
         type: 'doughnut',
         data: {
             labels: data.labels,
@@ -248,27 +312,61 @@ function makePie(id, data) {
     });
 }
 
-// Render existing charts
-makeBar('trafficChart',      trafficData,      'Avg Delivery Time');
-makeBar('weatherChart',      weatherData,      'Avg Delivery Time');
-makeBar('cityChart',         cityData,         'Avg Delivery Time');
-makeBar('vehicleChart',      vehicleData,      'Avg Delivery Time');
-makeBar('festivalChart',     festivalData,     'Avg Delivery Time');
+// ── Initial render ────────────────────────────────────────────────
+makeBar('trafficChart',      trafficData);
+makeBar('weatherChart',      weatherData);
+makeBar('cityChart',         cityData);
+makeBar('vehicleChart',      vehicleData);
+makeBar('festivalChart',     festivalData);
 makePie('trafficCountChart', trafficCountData);
 
-// Hour chart — colour by peak type
 const hourColors = hourData.labels.map(h => {
     const n = parseInt(h);
     if (n >= 8  && n <= 11) return '#ffc107';
     if (n >= 17 && n <= 23) return '#dc3545';
     return '#0d6efd';
 });
-makeBar('hourChart', hourData, 'Avg Delivery Time', hourColors);
+makeBar('hourChart', hourData, hourColors);
 
-// Day chart — weekends red
 const dayColors = dayData.labels.map(d =>
     (d === 'Saturday' || d === 'Sunday') ? '#dc3545' : '#0d6efd'
 );
-makeBar('dayChart', dayData, 'Avg Delivery Time', dayColors);
+makeBar('dayChart', dayData, dayColors);
+
+// ── Filter logic ──────────────────────────────────────────────────
+function filterData(originalData, value) {
+    if (value === 'all') return originalData;
+    const idx = originalData.labels.indexOf(value);
+    if (idx === -1) return originalData;
+    return {
+        labels: [originalData.labels[idx]],
+        values: [originalData.values[idx]]
+    };
+}
+
+function applyFilters() {
+    const city    = document.getElementById('filterCity').value;
+    const traffic = document.getElementById('filterTraffic').value;
+    const weather = document.getElementById('filterWeather').value;
+    const festival= document.getElementById('filterFestival').value;
+
+    makeBar('trafficChart',  filterData(trafficData,  traffic));
+    makeBar('weatherChart',  filterData(weatherData,  weather));
+    makeBar('cityChart',     filterData(cityData,      city));
+    makeBar('festivalChart', filterData(festivalData,  festival));
+
+    const isFiltered = city !== 'all' || traffic !== 'all' ||
+                       weather !== 'all' || festival !== 'all';
+    document.getElementById('filterCount').textContent =
+        isFiltered ? 'Filtered' : '45,584 rows';
+}
+
+function resetFilters() {
+    document.getElementById('filterCity').value     = 'all';
+    document.getElementById('filterTraffic').value  = 'all';
+    document.getElementById('filterWeather').value  = 'all';
+    document.getElementById('filterFestival').value = 'all';
+    applyFilters();
+}
 </script>
 {% endblock %}

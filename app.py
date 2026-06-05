@@ -403,6 +403,55 @@ Current prediction context:
     except Exception as e:
         print("CHAT ERROR:", str(e))
         return jsonify({'success': False, 'error': str(e)}), 400
+    
+
+@app.route('/admin')
+def admin():
+    import json
+    model_info = {
+        'name'      : 'XGBoost (Tuned - RandomizedSearchCV)',
+        'test_r2'   : 0.8393,
+        'test_rmse' : 3.7771,
+        'test_mae'  : 3.0353,
+        'trained_on': '42,592 records',
+        'features'  : 18,
+        'file'      : 'best_model.pkl'
+    }
+    return render_template('admin.html', model_info=model_info)
+
+@app.route('/download-model')
+def download_model():
+    from flask import send_file
+    return send_file(
+        os.path.join(BASE, 'model/best_model.pkl'),
+        as_attachment=True,
+        download_name='best_model_xgboost.pkl'
+    )
+@app.route('/feedback')
+def feedback():
+    return render_template('feedback.html')
+
+@app.route('/api/feedback', methods=['POST'])
+def submit_feedback():
+    import csv
+    from datetime import datetime
+    data     = request.get_json()
+    name     = data.get('name', '')
+    email    = data.get('email', '')
+    message  = data.get('message', '')
+    rating   = data.get('rating', '')
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    feedback_file = os.path.join(BASE, 'feedback.csv')
+    file_exists   = os.path.exists(feedback_file)
+
+    with open(feedback_file, 'a', newline='') as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(['Timestamp','Name','Email','Rating','Message'])
+        writer.writerow([timestamp, name, email, rating, message])
+
+    return jsonify({'success': True, 'message': 'Thank you for your feedback!'})
 
 # ── Prediction API ────────────────────────────────────────────────
 @app.route('/api/predict', methods=['POST'])
