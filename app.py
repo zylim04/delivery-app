@@ -300,23 +300,18 @@ def trends():
 def map_page():
     return render_template('map.html')
 
-@app.route('/chatbot')
-def chatbot():
-    return render_template('chatbot.html')
-
 @app.route('/api/chat', methods=['POST'])
 def chat():
     try:
-        from openai import OpenAI
+        from groq import Groq
 
         data       = request.get_json()
         user_msg   = data.get('message', '')
         prediction = data.get('prediction', None)
         inputs     = data.get('inputs', {})
 
-        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        client = Groq(api_key=os.getenv('GROQ_API_KEY'))
 
-        # Build context-aware system prompt
         context = """You are a delivery time prediction assistant.
 You help users understand food delivery time predictions made by an
 XGBoost machine learning model trained on 42,592 Indian food delivery
@@ -345,7 +340,6 @@ Delay classification:
 Keep responses concise, helpful and friendly.
 Always answer in 2–4 sentences maximum."""
 
-        # Add prediction context if available
         if prediction and inputs:
             context += f"""
 
@@ -359,17 +353,16 @@ Current prediction context:
 - Prep time: {inputs.get('prep_time_min', 'N/A')} min"""
 
         response = client.chat.completions.create(
-            model    = 'gpt-3.5-turbo',
+            model    = 'llama3-8b-8192',
             messages = [
-                {'role': 'system',  'content': context},
-                {'role': 'user',    'content': user_msg}
+                {'role': 'system', 'content': context},
+                {'role': 'user',   'content': user_msg}
             ],
             max_tokens  = 200,
             temperature = 0.7
         )
 
         reply = response.choices[0].message.content
-
         return jsonify({'success': True, 'reply': reply})
 
     except Exception as e:
