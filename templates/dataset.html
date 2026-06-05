@@ -127,6 +127,27 @@
         </div>
     </div>
 
+    <!-- Feature Distributions -->
+    <div class="card shadow-sm p-4 mb-4">
+        <h5><i class="bi bi-bar-chart text-primary"></i>
+            Feature Distributions
+        </h5>
+        <div class="row g-4 mt-1">
+            <div class="col-md-4">
+                <h6 class="text-muted text-center">Delivery Time (min)</h6>
+                <canvas id="deliveryDistChart" height="200"></canvas>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-muted text-center">Distance (km)</h6>
+                <canvas id="distanceChart" height="200"></canvas>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-muted text-center">Prep Time (min)</h6>
+                <canvas id="prepChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- Sample Data Table -->
     <div class="card shadow-sm p-4">
         <h5><i class="bi bi-table text-primary"></i>
@@ -142,12 +163,34 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Delivery time distribution bar chart
-const ctx = document.getElementById('deliveryChart').getContext('2d');
-new Chart(ctx, {
+
+function makeHist(id, labels, data, colors) {
+    new Chart(document.getElementById(id).getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { title: { display: true, text: 'Count' } }
+            }
+        }
+    });
+}
+
+// Delivery time distribution
+new Chart(document.getElementById('deliveryChart').getContext('2d'), {
     type: 'bar',
     data: {
-        labels: ['10-15', '16-20', '21-25', '26-30', '31-35', '36-40', '41-45', '46-54'],
+        labels: ['10-15','16-20','21-25','26-30',
+                 '31-35','36-40','41-45','46-54'],
         datasets: [{
             label: 'Number of Deliveries',
             data: [2100, 6800, 9200, 8900, 7400, 4200, 2800, 1200],
@@ -174,5 +217,27 @@ new Chart(ctx, {
         }
     }
 });
+
+// Delivery time histogram
+makeHist('deliveryDistChart',
+    ['10–15','16–20','21–25','26–30','31–35','36–40','41–45','46–54'],
+    [2100, 6800, 9200, 8900, 7400, 4200, 2800, 1200],
+    '#0d6efd'
+);
+
+// Distance distribution
+makeHist('distanceChart',
+    ['0–3','3–6','6–9','9–12','12–15','15–18','18+'],
+    [3200, 8400, 9100, 7800, 5600, 3200, 1800],
+    '#198754'
+);
+
+// Prep time distribution
+makeHist('prepChart',
+    ['5 min','10 min','15 min'],
+    [14200, 15600, 12800],
+    '#ffc107'
+);
+
 </script>
 {% endblock %}

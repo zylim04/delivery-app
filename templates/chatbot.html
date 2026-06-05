@@ -135,6 +135,18 @@
 
 {% block scripts %}
 <script>
+// ── Auto-send question from predict page ──────────────────────────
+window.addEventListener('load', function() {
+    const autoQ = sessionStorage.getItem('autoQuestion');
+    if (autoQ) {
+        sessionStorage.removeItem('autoQuestion');
+        document.getElementById('chat-input').value = autoQ;
+        sendMessage();
+    }
+});
+
+function handleKey(e) {
+
 function handleKey(e) {
     if (e.key === 'Enter') sendMessage();
 }

@@ -178,7 +178,34 @@ def dashboard():
         'max_traffic'  : traffic_avg.idxmax(),
         'worst_weather': weather_avg.idxmax()
     }
+    
+    # Avg delivery time by order hour
+    df['order_hour'] = pd.to_datetime(
+        df['Time_Orderd'], errors='coerce'
+    ).dt.hour
+    hour_avg = df.groupby('order_hour')[
+        'Time_taken (min)'
+    ].mean().round(1).sort_index()
+    hour_data = {
+        'labels': [str(h) for h in hour_avg.index.tolist()],
+        'values': hour_avg.values.tolist()
+    }
 
+    # Avg delivery time by day of week
+    df['order_date'] = pd.to_datetime(
+        df['Order_Date'], dayfirst=True, errors='coerce'
+    )
+    df['day_of_week'] = df['order_date'].dt.day_name()
+    day_order = ['Monday','Tuesday','Wednesday',
+                 'Thursday','Friday','Saturday','Sunday']
+    day_avg = df.groupby('day_of_week')[
+        'Time_taken (min)'
+    ].mean().round(1).reindex(day_order)
+    day_data = {
+        'labels': day_avg.index.tolist(),
+        'values': day_avg.values.tolist()
+    }
+    
     return render_template('dashboard.html',
         traffic_data     = json.dumps(traffic_data),
         weather_data     = json.dumps(weather_data),
@@ -186,8 +213,11 @@ def dashboard():
         vehicle_data     = json.dumps(vehicle_data),
         festival_data    = json.dumps(festival_data),
         traffic_count    = json.dumps(traffic_count_data),
+        hour_data        = json.dumps(hour_data),
+        day_data         = json.dumps(day_data),
         stats            = stats
     )
+
 
 @app.route('/trends')
 def trends():

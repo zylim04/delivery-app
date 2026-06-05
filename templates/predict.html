@@ -212,6 +212,14 @@
                             <div class="fw-bold">±3.78 min</div>
                         </div>
                     </div>
+                    <hr>
+                    <div class="d-grid mt-2">
+                        <button class="btn btn-outline-primary btn-sm"
+                                onclick="explainWithAI()">
+                            <i class="bi bi-robot"></i>
+                            Explain Result with AI
+                        </button>
+                    </div>     
                 </div>
             </div>
 
@@ -372,6 +380,39 @@ function resetForm() {
     document.getElementById('loading-card').style.display = 'none';
     const existingMsg = document.getElementById('warning-msg');
     if (existingMsg) existingMsg.remove();
+}
+
+// ── Explain with AI ───────────────────────────────────────────────
+function explainWithAI() {
+    const time   = document.getElementById('result-time').textContent;
+    const status = document.getElementById('result-badge').textContent;
+
+    if (time === '--') {
+        alert('Please run a prediction first.');
+        return;
+    }
+
+    const traffic  = document.getElementById('road_traffic_density').value;
+    const weather  = document.getElementById('weather_conditions').value;
+    const distance = document.getElementById('distance_km').value;
+    const festival = document.getElementById('festival').value;
+    const vehicle  = document.getElementById('type_of_vehicle').value;
+    const prep     = document.getElementById('prep_time_min').value;
+
+    const question =
+        'My delivery prediction is ' + time + ' minutes (' + status + '). ' +
+        'The conditions are: traffic=' + traffic +
+        ', weather=' + weather +
+        ', distance=' + distance + ' km' +
+        ', festival=' + festival +
+        ', vehicle=' + vehicle +
+        ', prep time=' + prep + ' min. ' +
+        'Please explain why this prediction is ' + status +
+        ' and give suggestions to reduce the delivery time.';
+
+    // Store question in sessionStorage and redirect to chatbot
+    sessionStorage.setItem('autoQuestion', question);
+    window.location.href = '/chatbot';
 }
 
 </script>

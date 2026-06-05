@@ -122,6 +122,35 @@
         </div>
     </div>
 
+    <!-- Row 4: Hour + Day of Week -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-clock text-primary"></i>
+                    Avg Delivery Time by Order Hour
+                </h6>
+                <canvas id="hourChart" height="220"></canvas>
+                <p class="text-muted small mt-2">
+                    Evening peak hours (17–23) show longer delivery times.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-calendar3 text-success"></i>
+                    Avg Delivery Time by Day of Week
+                </h6>
+                <canvas id="dayChart" height="220"></canvas>
+                <p class="text-muted small mt-2">
+                    Weekends tend to have higher delivery times
+                    due to increased demand.
+                </p>
+            </div>
+        </div>
+    </div>
+
     <!-- Key Insights -->
     <div class="card shadow-sm p-4">
         <h5><i class="bi bi-lightbulb text-warning"></i> Key Insights</h5>
@@ -169,12 +198,14 @@ const cityData         = {{ city_data | safe }};
 const vehicleData      = {{ vehicle_data | safe }};
 const festivalData     = {{ festival_data | safe }};
 const trafficCountData = {{ traffic_count | safe }};
+const hourData         = {{ hour_data | safe }};
+const dayData          = {{ day_data | safe }};
 
 // Color palettes
-const barColors  = ['#0d6efd','#198754','#ffc107','#dc3545','#6f42c1','#0dcaf0'];
-const pieColors  = ['#0d6efd','#198754','#ffc107','#dc3545'];
+const barColors = ['#0d6efd','#198754','#ffc107','#dc3545','#6f42c1','#0dcaf0'];
+const pieColors = ['#0d6efd','#198754','#ffc107','#dc3545'];
 
-function makeBar(id, data, label, color) {
+function makeBar(id, data, label, customColors) {
     new Chart(document.getElementById(id).getContext('2d'), {
         type: 'bar',
         data: {
@@ -182,7 +213,7 @@ function makeBar(id, data, label, color) {
             datasets: [{
                 label: label,
                 data: data.values,
-                backgroundColor: barColors,
+                backgroundColor: customColors || barColors,
                 borderRadius: 5
             }]
         },
@@ -212,19 +243,32 @@ function makePie(id, data) {
         },
         options: {
             responsive: true,
-            plugins: {
-                legend: { position: 'bottom' }
-            }
+            plugins: { legend: { position: 'bottom' } }
         }
     });
 }
 
-// Render all charts
-makeBar('trafficChart', trafficData, 'Avg Delivery Time');
-makeBar('weatherChart', weatherData, 'Avg Delivery Time');
-makeBar('cityChart',    cityData,    'Avg Delivery Time');
-makeBar('vehicleChart', vehicleData, 'Avg Delivery Time');
-makeBar('festivalChart',festivalData,'Avg Delivery Time');
+// Render existing charts
+makeBar('trafficChart',      trafficData,      'Avg Delivery Time');
+makeBar('weatherChart',      weatherData,      'Avg Delivery Time');
+makeBar('cityChart',         cityData,         'Avg Delivery Time');
+makeBar('vehicleChart',      vehicleData,      'Avg Delivery Time');
+makeBar('festivalChart',     festivalData,     'Avg Delivery Time');
 makePie('trafficCountChart', trafficCountData);
+
+// Hour chart — colour by peak type
+const hourColors = hourData.labels.map(h => {
+    const n = parseInt(h);
+    if (n >= 8  && n <= 11) return '#ffc107';
+    if (n >= 17 && n <= 23) return '#dc3545';
+    return '#0d6efd';
+});
+makeBar('hourChart', hourData, 'Avg Delivery Time', hourColors);
+
+// Day chart — weekends red
+const dayColors = dayData.labels.map(d =>
+    (d === 'Saturday' || d === 'Sunday') ? '#dc3545' : '#0d6efd'
+);
+makeBar('dayChart', dayData, 'Avg Delivery Time', dayColors);
 </script>
 {% endblock %}
