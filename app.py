@@ -186,6 +186,112 @@ def dashboard():
         stats            = stats
     )
 
+@app.route('/trends')
+def trends():
+    import pandas as pd
+    import json
+
+    df = pd.read_csv(os.path.join(BASE, 'Zomato Dataset.csv'))
+    df.columns = df.columns.str.strip()
+
+    # Clean target column
+    df['Time_taken (min)'] = pd.to_numeric(
+        df['Time_taken (min)'], errors='coerce'
+    )
+    df = df.dropna(subset=['Time_taken (min)'])
+
+    # Delay classification
+    def classify(t):
+        if t <= 25:   return 'Normal'
+        elif t <= 35: return 'Slight Delay'
+        else:         return 'High Delay'
+
+    df['delay_class'] = df['Time_taken (min)'].apply(classify)
+
+    # 1. Delay classification distribution
+    delay_counts = df['delay_class'].value_counts()
+    delay_dist = {
+        'labels': delay_counts.index.tolist(),
+        'values': delay_counts.values.tolist()
+    }
+
+    # 2. Avg delivery time by traffic — sorted
+    traffic_avg = df.groupby('Road_traffic_density')[
+        'Time_taken (min)'
+    ].mean().round(1).sort_values(ascending=False)
+    traffic_data = {
+        'labels': traffic_avg.index.tolist(),
+        'values': traffic_avg.values.tolist()
+    }
+
+    # 3. Festival vs non-festival
+    festival_avg = df.groupby('Festival')[
+        'Time_taken (min)'
+    ].mean().round(1)
+    festival_data = {
+        'labels': festival_avg.index.tolist(),
+        'values': festival_avg.values.tolist()
+    }
+
+    # 4. Weather delay impact
+    weather_avg = df.groupby('Weather_conditions')[
+        'Time_taken (min)'
+    ].mean().round(1).sort_values(ascending=False)
+    weather_data = {
+        'labels': weather_avg.index.tolist(),
+        'values': weather_avg.values.tolist()
+    }
+
+    # 5. High delay rate by city
+    city_delay = df.groupby('City').apply(
+        lambda x: (x['delay_class'] == 'High Delay').mean() * 100
+    ).round(1).sort_values(ascending=False)
+    city_delay_data = {
+        'labels': city_delay.index.tolist(),
+        'values': city_delay.values.tolist()
+    }
+
+    # 6. Multiple deliveries impact
+    multi_avg = df.groupby('multiple_deliveries')[
+        'Time_taken (min)'
+    ].mean().round(1).sort_values()
+    multi_data = {
+        'labels': [str(int(x)) for x in multi_avg.index.tolist()],
+        'values': multi_avg.values.tolist()
+    }
+
+    # Key stats for insight cards
+    jam_avg    = round(df[df['Road_traffic_density'] == 'Jam'][
+        'Time_taken (min)'].mean(), 1)
+    low_avg    = round(df[df['Road_traffic_density'] == 'Low'][
+        'Time_taken (min)'].mean(), 1)
+    fest_avg   = round(df[df['Festival'] == 'Yes'][
+        'Time_taken (min)'].mean(), 1)
+    nofest_avg = round(df[df['Festival'] == 'No'][
+        'Time_taken (min)'].mean(), 1)
+    high_delay_pct = round(
+        (df['delay_class'] == 'High Delay').mean() * 100, 1
+    )
+
+    stats = {
+        'jam_avg'        : jam_avg,
+        'low_avg'        : low_avg,
+        'traffic_diff'   : round(jam_avg - low_avg, 1),
+        'fest_avg'       : fest_avg,
+        'nofest_avg'     : nofest_avg,
+        'fest_diff'      : round(fest_avg - nofest_avg, 1),
+        'high_delay_pct' : high_delay_pct
+    }
+
+    return render_template('trends.html',
+        delay_dist   = json.dumps(delay_dist),
+        traffic_data = json.dumps(traffic_data),
+        festival_data= json.dumps(festival_data),
+        weather_data = json.dumps(weather_data),
+        city_delay   = json.dumps(city_delay_data),
+        multi_data   = json.dumps(multi_data),
+        stats        = stats
+    )
 
 # ── Prediction API ────────────────────────────────────────────────
 @app.route('/api/predict', methods=['POST'])

@@ -46,6 +46,10 @@
                        href="/dashboard"><i class="bi bi-bar-chart-line"></i> Dashboard</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/trends' %}active{% endif %}"
+                      href="/trends"><i class="bi bi-graph-down-arrow"></i> Trends</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link {% if request.path == '/performance' %}active{% endif %}"
                        href="/performance"><i class="bi bi-graph-up"></i> Performance</a>
                 </li>
