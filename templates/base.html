@@ -50,6 +50,10 @@
                        href="/features"><i class="bi bi-bar-chart"></i> Features</a>
                 </li>
                 <li class="nav-item">
+                   <a class="nav-link {% if request.path == '/dataset' %}active{% endif %}"
+                       href="/dataset"><i class="bi bi-folder2-open"></i> Dataset</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link {% if request.path == '/about' %}active{% endif %}"
                        href="/about"><i class="bi bi-info-circle"></i> About</a>
                 </li>

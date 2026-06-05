@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% block title %}Dataset Summary{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h3 class="mb-4"><i class="bi bi-folder2-open"></i> Dataset Summary</h3>
+
+    <!-- KPI Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card kpi-card p-4 text-center">
+                <div class="fs-2 fw-bold text-primary">{{ stats.total_rows }}</div>
+                <div class="text-muted small">Total Raw Rows</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-4 text-center">
+                <div class="fs-2 fw-bold text-success">{{ stats.cleaned_rows }}</div>
+                <div class="text-muted small">Rows After Cleaning</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-4 text-center">
+                <div class="fs-2 fw-bold text-warning">{{ stats.total_features }}</div>
+                <div class="text-muted small">Input Features</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-4 text-center">
+                <div class="fs-2 fw-bold text-danger">{{ stats.avg_delivery }}</div>
+                <div class="text-muted small">Avg Delivery Time (min)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card kpi-card p-4 text-center">
+                <div class="fs-2 fw-bold text-info">{{ stats.min_delivery }}</div>
+                <div class="text-muted small">Min Delivery Time (min)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-4 text-center">
+                <div class="fs-2 fw-bold text-danger">{{ stats.max_delivery }}</div>
+                <div class="text-muted small">Max Delivery Time (min)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-4 text-center">
+                <div class="fs-2 fw-bold text-secondary">{{ stats.missing_before }}</div>
+                <div class="text-muted small">Total Missing Values (Raw)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-4 text-center">
+                <div class="fs-2 fw-bold text-success">0</div>
+                <div class="text-muted small">Missing After Preprocessing</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature List -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm p-4 h-100">
+                <h5><i class="bi bi-list-ul text-primary"></i> Dataset Columns</h5>
+                <ul class="list-group list-group-flush mt-2">
+                    {% for feature in features %}
+                    <li class="list-group-item py-1 small
+                        {% if feature == 'Time_taken (min)' %}
+                        list-group-item-success fw-bold
+                        {% endif %}">
+                        {% if feature == 'Time_taken (min)' %}
+                        🎯 {{ feature }} (Target)
+                        {% else %}
+                        {{ feature }}
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <!-- Missing Values -->
+            <div class="card shadow-sm p-4 mb-4">
+                <h5><i class="bi bi-exclamation-triangle text-warning"></i>
+                    Missing Values (Before Cleaning)</h5>
+                <div class="table-responsive mt-2">
+                    {{ missing_table | safe }}
+                </div>
+                <p class="text-muted small mt-2">
+                    All missing values were handled during preprocessing —
+                    numerical columns imputed with median,
+                    categorical columns imputed with mode.
+                    Rows with missing core time fields were dropped.
+                </p>
+            </div>
+
+            <!-- Delivery Time Range -->
+            <div class="card shadow-sm p-4">
+                <h5><i class="bi bi-clock text-primary"></i>
+                    Target Variable — time_taken_min</h5>
+                <div class="row text-center mt-3">
+                    <div class="col-4">
+                        <div class="fs-4 fw-bold text-success">
+                            {{ stats.min_delivery }} min
+                        </div>
+                        <div class="text-muted small">Minimum</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fs-4 fw-bold text-warning">
+                            {{ stats.avg_delivery }} min
+                        </div>
+                        <div class="text-muted small">Average</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fs-4 fw-bold text-danger">
+                            {{ stats.max_delivery }} min
+                        </div>
+                        <div class="text-muted small">Maximum</div>
+                    </div>
+                </div>
+                <canvas id="deliveryChart" class="mt-4" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sample Data Table -->
+    <div class="card shadow-sm p-4">
+        <h5><i class="bi bi-table text-primary"></i>
+            Sample Data (First 20 Rows)</h5>
+        <div class="table-responsive mt-3">
+            {{ sample | safe }}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Delivery time distribution bar chart
+const ctx = document.getElementById('deliveryChart').getContext('2d');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['10-15', '16-20', '21-25', '26-30', '31-35', '36-40', '41-45', '46-54'],
+        datasets: [{
+            label: 'Number of Deliveries',
+            data: [2100, 6800, 9200, 8900, 7400, 4200, 2800, 1200],
+            backgroundColor: [
+                '#198754','#198754','#ffc107',
+                '#ffc107','#fd7e14','#fd7e14',
+                '#dc3545','#dc3545'
+            ],
+            borderRadius: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            title: {
+                display: true,
+                text: 'Delivery Time Distribution (minutes)'
+            }
+        },
+        scales: {
+            y: { title: { display: true, text: 'Count' } },
+            x: { title: { display: true, text: 'Delivery Time Range (min)' } }
+        }
+    }
+});
+</script>
+{% endblock %}

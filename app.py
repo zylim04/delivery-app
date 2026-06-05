@@ -71,6 +71,53 @@ def features():
     return render_template('features.html',
                            data=json.dumps(feature_importance_data))
 
+
+@app.route('/dataset')
+def dataset():
+    import pandas as pd
+
+    df = pd.read_csv(os.path.join(BASE, 'Zomato Dataset.csv'))
+
+    # Basic statistics
+    stats = {
+        'total_rows'     : 45584,
+        'cleaned_rows'   : 42592,
+        'total_features' : 20,
+        'target'         : 'time_taken_min',
+        'missing_before' : int(df.isnull().sum().sum()),
+        'avg_delivery'   : round(df['Time_taken (min)'].mean(), 1),
+        'min_delivery'   : int(df['Time_taken (min)'].min()),
+        'max_delivery'   : int(df['Time_taken (min)'].max()),
+    }
+
+    # Feature list
+    features = df.columns.tolist()
+
+    # Sample rows — first 20
+    sample = df.head(20).to_html(
+        classes='table table-sm table-bordered table-hover',
+        index=False,
+        border=0
+    )
+
+    # Missing values per column
+    missing = df.isnull().sum()
+    missing_df = missing[missing > 0].reset_index()
+    missing_df.columns = ['Column', 'Missing Count']
+    missing_df['Missing %'] = ((missing_df['Missing Count'] / len(df)) * 100).round(2)
+    missing_table = missing_df.to_html(
+        classes='table table-sm table-bordered',
+        index=False,
+        border=0
+    )
+
+    return render_template('dataset.html',
+                           stats=stats,
+                           features=features,
+                           sample=sample,
+                           missing_table=missing_table)
+
+
 # ── Prediction API ────────────────────────────────────────────────
 @app.route('/api/predict', methods=['POST'])
 def predict():
