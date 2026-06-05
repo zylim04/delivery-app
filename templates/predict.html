@@ -85,7 +85,7 @@
                         <div class="col-md-6">
                             <label class="form-label">Distance (km)</label>
                             <input type="number" class="form-control"
-                                   id="distance_km" value="5.0" step="0.1" min="0">
+                                   id="distance_km" value="5.0" step="0.1" min="0" max="25">
                         </div>
 
                         <div class="col-md-6">
@@ -170,9 +170,64 @@
 
 {% block scripts %}
 <script>
+// Auto-fill distance from map page if passed in URL
+window.onload = function() {
+    const params   = new URLSearchParams(window.location.search);
+    const distance = params.get('distance');
+    if (distance) {
+        const field        = document.getElementById('distance_km');
+        field.value        = parseFloat(distance).toFixed(2);
+        field.style.border = '2px solid #198754';
+        field.style.background = '#f0fff4';
+
+        // Show a notice so user knows distance was auto-filled
+        const notice = document.createElement('div');
+        notice.className   = 'alert alert-success alert-dismissible mt-2 p-2 small';
+        notice.innerHTML   =
+            '<i class="bi bi-check-circle"></i> Distance auto-filled from map: <strong>' +
+            parseFloat(distance).toFixed(2) + ' km</strong>' +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+        field.parentNode.appendChild(notice);
+    }
+};
+
 async function predict() {
+    // Clear any previous warning message
+    const existingMsg = document.getElementById('warning-msg');
+    if (existingMsg) existingMsg.remove();
+
+    // Reset result time font size in case warning changed it
+    document.getElementById('result-time').style.fontSize = '';
+
     document.getElementById('loading-card').style.display  = 'block';
     document.getElementById('result-card').style.display   = 'none';
+
+    // Validate distance is within training range
+    const distance = parseFloat(document.getElementById('distance_km').value);
+    if (distance > 25) {
+        document.getElementById('loading-card').style.display = 'none';
+        document.getElementById('result-card').style.display  = 'block';
+        document.getElementById('result-header').className    = 'card-header text-white bg-warning';
+        document.getElementById('result-time').textContent    = '⚠️';
+        document.getElementById('result-time').style.fontSize = '3rem';
+        document.getElementById('result-badge').textContent   = 'Distance Out of Range';
+        document.getElementById('result-badge').className     = 'badge fs-6 p-3 bg-warning text-dark';
+        document.getElementById('result-header').innerHTML    = '<strong>⚠️ Warning</strong>';
+
+        // Add warning message below badge
+        const existingMsg = document.getElementById('warning-msg');
+        if (existingMsg) existingMsg.remove();
+        const msg = document.createElement('div');
+        msg.id        = 'warning-msg';
+        msg.className = 'alert alert-warning mt-3 text-start small';
+        msg.innerHTML =
+            '<strong>Distance ' + distance + ' km is outside the training range.</strong><br>' +
+            '99% of training data is below 21 km. Predictions above 25 km may be unreliable.<br><br>' +
+            'Please select locations closer together on the map or manually enter a distance between 1–25 km.';
+        document.querySelector('.card-body.text-center').appendChild(msg);
+        return;
+    }
+  
 
     const hour      = parseInt(document.getElementById('order_hour').value);
     const today     = new Date();
@@ -184,27 +239,29 @@ async function predict() {
     if (hour >= 17 && hour <= 23) peakHour = 'Evening Peak';
 
     const payload = {
-        delivery_person_age         : document.getElementById('delivery_person_age').value,
-        delivery_person_ratings     : document.getElementById('delivery_person_ratings').value,
-        restaurant_latitude         : 26.5,
-        restaurant_longitude        : 80.3,
-        delivery_location_latitude  : 26.6,
-        delivery_location_longitude : 80.4,
-        weather_conditions          : document.getElementById('weather_conditions').value,
-        road_traffic_density        : document.getElementById('road_traffic_density').value,
-        vehicle_condition           : 1,
-        type_of_order               : document.getElementById('type_of_order').value,
-        type_of_vehicle             : document.getElementById('type_of_vehicle').value,
-        multiple_deliveries         : document.getElementById('multiple_deliveries').value,
-        festival                    : document.getElementById('festival').value,
-        city                        : document.getElementById('city').value,
-        prep_time_min               : document.getElementById('prep_time_min').value,
-        order_hour                  : hour,
-        day_of_week                 : dayOfWeek,
-        is_weekend                  : isWeekend,
-        peak_hour                   : peakHour,
-        distance_km                 : document.getElementById('distance_km').value
-    };
+    delivery_person_age         : parseFloat(document.getElementById('delivery_person_age').value),
+    delivery_person_ratings     : parseFloat(document.getElementById('delivery_person_ratings').value),
+    restaurant_latitude         : 26.5,
+    restaurant_longitude        : 80.3,
+    delivery_location_latitude  : 26.6,
+    delivery_location_longitude : 80.4,
+    weather_conditions          : document.getElementById('weather_conditions').value,
+    road_traffic_density        : document.getElementById('road_traffic_density').value,
+    vehicle_condition           : 1,
+    type_of_order               : document.getElementById('type_of_order').value,
+    type_of_vehicle             : document.getElementById('type_of_vehicle').value,
+    multiple_deliveries         : parseFloat(document.getElementById('multiple_deliveries').value),
+    festival                    : document.getElementById('festival').value,
+    city                        : document.getElementById('city').value,
+    prep_time_min               : parseFloat(document.getElementById('prep_time_min').value),
+    order_hour                  : hour,
+    day_of_week                 : dayOfWeek,
+    is_weekend                  : isWeekend,
+    peak_hour                   : peakHour,
+    distance_km                 : parseFloat(document.getElementById('distance_km').value)
+  };
+
+    
 
     try {
         const res    = await fetch('/api/predict', {
@@ -219,9 +276,11 @@ async function predict() {
         if (result.success) {
             document.getElementById('result-card').style.display  = 'block';
             document.getElementById('result-time').textContent    = result.prediction;
+            document.getElementById('result-time').style.fontSize = '';
             document.getElementById('result-badge').textContent   = result.icon + ' ' + result.status;
             document.getElementById('result-badge').className     = `badge fs-5 p-3 bg-${result.color}`;
             document.getElementById('result-header').className    = `card-header text-white bg-${result.color}`;
+            document.getElementById('result-header').innerHTML    = '<strong>📦 Prediction Result</strong>';
         } else {
             alert('Error: ' + result.error);
             document.getElementById('loading-card').style.display = 'none';
