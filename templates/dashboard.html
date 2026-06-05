@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h3 class="mb-2"><i class="bi bi-bar-chart-line"></i> Analytics Dashboard</h3>
+    <p class="text-muted mb-4">
+        Operational insights based on 45,584 delivery records.
+    </p>
+
+    <!-- KPI Summary Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card kpi-card p-3 text-center">
+                <div class="fs-3 fw-bold text-primary">{{ stats.avg_time }}</div>
+                <div class="text-muted small">Avg Delivery Time (min)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-3 text-center">
+                <div class="fs-3 fw-bold text-success">{{ stats.total }}</div>
+                <div class="text-muted small">Total Records</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-3 text-center">
+                <div class="fs-3 fw-bold text-danger">{{ stats.max_traffic }}</div>
+                <div class="text-muted small">Highest Delay Traffic</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-3 text-center">
+                <div class="fs-3 fw-bold text-warning">{{ stats.worst_weather }}</div>
+                <div class="text-muted small">Highest Delay Weather</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 1: Traffic + Weather -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-car-front text-danger"></i>
+                    Avg Delivery Time by Traffic Density
+                </h6>
+                <canvas id="trafficChart" height="220"></canvas>
+                <p class="text-muted small mt-2">
+                    Jam traffic results in the longest delivery times.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-cloud-rain text-primary"></i>
+                    Avg Delivery Time by Weather Condition
+                </h6>
+                <canvas id="weatherChart" height="220"></canvas>
+                <p class="text-muted small mt-2">
+                    Stormy and foggy conditions increase delivery time.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: City + Vehicle -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-buildings text-success"></i>
+                    Avg Delivery Time by City
+                </h6>
+                <canvas id="cityChart" height="220"></canvas>
+                <p class="text-muted small mt-2">
+                    Urban and metropolitan areas show longer delivery times.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-bicycle text-warning"></i>
+                    Avg Delivery Time by Vehicle Type
+                </h6>
+                <canvas id="vehicleChart" height="220"></canvas>
+                <p class="text-muted small mt-2">
+                    Bicycles tend to take longer compared to motorcycles.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 3: Festival + Traffic Count -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-calendar-event text-info"></i>
+                    Avg Delivery Time — Festival vs Non-Festival
+                </h6>
+                <canvas id="festivalChart" height="220"></canvas>
+                <p class="text-muted small mt-2">
+                    Festival periods show higher average delivery times
+                    due to increased demand.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-pie-chart text-secondary"></i>
+                    Delivery Count by Traffic Density
+                </h6>
+                <canvas id="trafficCountChart" height="220"></canvas>
+                <p class="text-muted small mt-2">
+                    Distribution of deliveries across different
+                    traffic conditions.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Insights -->
+    <div class="card shadow-sm p-4">
+        <h5><i class="bi bi-lightbulb text-warning"></i> Key Insights</h5>
+        <div class="row g-3 mt-1">
+            <div class="col-md-4">
+                <div class="p-3 bg-danger bg-opacity-10 rounded">
+                    <strong>🚦 Traffic Impact</strong>
+                    <p class="small text-muted mb-0 mt-1">
+                        Jam traffic increases average delivery time
+                        significantly compared to low traffic conditions.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-warning bg-opacity-10 rounded">
+                    <strong>🌧 Weather Impact</strong>
+                    <p class="small text-muted mb-0 mt-1">
+                        Stormy and sandstorm conditions cause the
+                        most delay in delivery operations.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-info bg-opacity-10 rounded">
+                    <strong>🎉 Festival Impact</strong>
+                    <p class="small text-muted mb-0 mt-1">
+                        Festival periods result in longer delivery times
+                        due to higher order volumes and road congestion.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Load data from Flask
+const trafficData      = {{ traffic_data | safe }};
+const weatherData      = {{ weather_data | safe }};
+const cityData         = {{ city_data | safe }};
+const vehicleData      = {{ vehicle_data | safe }};
+const festivalData     = {{ festival_data | safe }};
+const trafficCountData = {{ traffic_count | safe }};
+
+// Color palettes
+const barColors  = ['#0d6efd','#198754','#ffc107','#dc3545','#6f42c1','#0dcaf0'];
+const pieColors  = ['#0d6efd','#198754','#ffc107','#dc3545'];
+
+function makeBar(id, data, label, color) {
+    new Chart(document.getElementById(id).getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: label,
+                data: data.values,
+                backgroundColor: barColors,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    title: { display: true, text: 'Avg Time (min)' }
+                }
+            }
+        }
+    });
+}
+
+function makePie(id, data) {
+    new Chart(document.getElementById(id).getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                data: data.values,
+                backgroundColor: pieColors,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+}
+
+// Render all charts
+makeBar('trafficChart', trafficData, 'Avg Delivery Time');
+makeBar('weatherChart', weatherData, 'Avg Delivery Time');
+makeBar('cityChart',    cityData,    'Avg Delivery Time');
+makeBar('vehicleChart', vehicleData, 'Avg Delivery Time');
+makeBar('festivalChart',festivalData,'Avg Delivery Time');
+makePie('trafficCountChart', trafficCountData);
+</script>
+{% endblock %}

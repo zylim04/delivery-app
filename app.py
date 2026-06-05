@@ -118,6 +118,75 @@ def dataset():
                            missing_table=missing_table)
 
 
+@app.route('/dashboard')
+def dashboard():
+    import pandas as pd
+    import json
+
+    df = pd.read_csv(os.path.join(BASE, 'Zomato Dataset.csv'))
+    df.columns = df.columns.str.strip()
+
+    # Avg delivery time by traffic density
+    traffic_avg = df.groupby('Road_traffic_density')['Time_taken (min)'].mean().round(1)
+    traffic_data = {
+        'labels': traffic_avg.index.tolist(),
+        'values': traffic_avg.values.tolist()
+    }
+
+    # Avg delivery time by weather
+    weather_avg = df.groupby('Weather_conditions')['Time_taken (min)'].mean().round(1)
+    weather_data = {
+        'labels': weather_avg.index.tolist(),
+        'values': weather_avg.values.tolist()
+    }
+
+    # Avg delivery time by city
+    city_avg = df.groupby('City')['Time_taken (min)'].mean().round(1)
+    city_data = {
+        'labels': city_avg.index.tolist(),
+        'values': city_avg.values.tolist()
+    }
+
+    # Avg delivery time by vehicle type
+    vehicle_avg = df.groupby('Type_of_vehicle')['Time_taken (min)'].mean().round(1)
+    vehicle_data = {
+        'labels': vehicle_avg.index.tolist(),
+        'values': vehicle_avg.values.tolist()
+    }
+
+    # Avg delivery time by festival
+    festival_avg = df.groupby('Festival')['Time_taken (min)'].mean().round(1)
+    festival_data = {
+        'labels': festival_avg.index.tolist(),
+        'values': festival_avg.values.tolist()
+    }
+
+    # Delivery count by traffic
+    traffic_count = df['Road_traffic_density'].value_counts()
+    traffic_count_data = {
+        'labels': traffic_count.index.tolist(),
+        'values': traffic_count.values.tolist()
+    }
+
+    # Summary stats
+    stats = {
+        'avg_time'     : round(df['Time_taken (min)'].mean(), 1),
+        'total'        : len(df),
+        'max_traffic'  : traffic_avg.idxmax(),
+        'worst_weather': weather_avg.idxmax()
+    }
+
+    return render_template('dashboard.html',
+        traffic_data     = json.dumps(traffic_data),
+        weather_data     = json.dumps(weather_data),
+        city_data        = json.dumps(city_data),
+        vehicle_data     = json.dumps(vehicle_data),
+        festival_data    = json.dumps(festival_data),
+        traffic_count    = json.dumps(traffic_count_data),
+        stats            = stats
+    )
+
+
 # ── Prediction API ────────────────────────────────────────────────
 @app.route('/api/predict', methods=['POST'])
 def predict():
