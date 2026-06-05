@@ -3,6 +3,9 @@ import joblib
 import numpy as np
 import pandas as pd
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -296,6 +299,81 @@ def trends():
 @app.route('/map')
 def map_page():
     return render_template('map.html')
+
+@app.route('/chatbot')
+def chatbot():
+    return render_template('chatbot.html')
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    try:
+        from openai import OpenAI
+
+        data       = request.get_json()
+        user_msg   = data.get('message', '')
+        prediction = data.get('prediction', None)
+        inputs     = data.get('inputs', {})
+
+        client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+        # Build context-aware system prompt
+        context = """You are a delivery time prediction assistant.
+You help users understand food delivery time predictions made by an
+XGBoost machine learning model trained on 42,592 Indian food delivery
+records.
+
+Key facts about the model:
+- Best model: XGBoost tuned with RandomizedSearchCV
+- Test R²: 0.8393 (explains 84% of delivery time variance)
+- Test RMSE: 3.7771 minutes
+- Training data: Zomato delivery dataset, India
+
+Key factors affecting delivery time (by importance):
+1. distance_km — strongest predictor
+2. delivery_person_ratings — higher rating = faster delivery
+3. prep_time_min — restaurant preparation time
+4. multiple_deliveries — more orders = longer time
+5. road_traffic_density — Jam causes most delay
+6. weather_conditions — Stormy/Fog cause delays
+7. festival — festival periods increase delivery time
+
+Delay classification:
+- Normal: ≤ 25 minutes
+- Slight Delay: 26–35 minutes
+- High Delay: > 35 minutes
+
+Keep responses concise, helpful and friendly.
+Always answer in 2–4 sentences maximum."""
+
+        # Add prediction context if available
+        if prediction and inputs:
+            context += f"""
+
+Current prediction context:
+- Predicted delivery time: {prediction} minutes
+- Distance: {inputs.get('distance_km', 'N/A')} km
+- Traffic: {inputs.get('road_traffic_density', 'N/A')}
+- Weather: {inputs.get('weather_conditions', 'N/A')}
+- Festival: {inputs.get('festival', 'N/A')}
+- Vehicle: {inputs.get('type_of_vehicle', 'N/A')}
+- Prep time: {inputs.get('prep_time_min', 'N/A')} min"""
+
+        response = client.chat.completions.create(
+            model    = 'gpt-3.5-turbo',
+            messages = [
+                {'role': 'system',  'content': context},
+                {'role': 'user',    'content': user_msg}
+            ],
+            max_tokens  = 200,
+            temperature = 0.7
+        )
+
+        reply = response.choices[0].message.content
+
+        return jsonify({'success': True, 'reply': reply})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
 
 # ── Prediction API ────────────────────────────────────────────────
 @app.route('/api/predict', methods=['POST'])

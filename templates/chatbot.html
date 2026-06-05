@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% block title %}AI Assistant{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h3 class="mb-2"><i class="bi bi-robot"></i> AI Assistant</h3>
+    <p class="text-muted mb-4">
+        Ask me anything about your delivery prediction or
+        factors affecting delivery time.
+    </p>
+
+    <div class="row g-4">
+
+        <!-- Left: Quick buttons + context -->
+        <div class="col-md-4">
+
+            <!-- Quick questions -->
+            <div class="card shadow-sm p-4 mb-3">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-lightning text-warning"></i>
+                    Quick Questions
+                </h6>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary btn-sm text-start"
+                            onclick="sendQuick('Which factors affect delivery time the most?')">
+                        📊 Which factors affect delivery time?
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm text-start"
+                            onclick="sendQuick('How can I reduce delivery delays?')">
+                        ⚡ How to reduce delivery delays?
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm text-start"
+                            onclick="sendQuick('What does RMSE mean in simple terms?')">
+                        📈 What does RMSE mean?
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm text-start"
+                            onclick="sendQuick('Why does traffic density affect delivery time?')">
+                        🚦 Why does traffic affect delivery?
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm text-start"
+                            onclick="sendQuick('How does weather affect delivery time?')">
+                        🌧 How does weather affect delivery?
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm text-start"
+                            onclick="sendQuick('Explain the XGBoost model used in this system')">
+                        🤖 Explain the XGBoost model
+                    </button>
+                </div>
+            </div>
+
+            <!-- Model context card -->
+            <div class="card shadow-sm p-4">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-info-circle text-primary"></i>
+                    Model Context
+                </h6>
+                <ul class="small text-muted list-unstyled">
+                    <li class="mb-1">🏆 <strong>Model:</strong> XGBoost</li>
+                    <li class="mb-1">📊 <strong>R²:</strong> 0.8393</li>
+                    <li class="mb-1">📏 <strong>RMSE:</strong> 3.78 min</li>
+                    <li class="mb-1">📦 <strong>Records:</strong> 42,592</li>
+                    <li class="mb-1">📍 <strong>Dataset:</strong> Zomato India</li>
+                </ul>
+                <hr>
+                <p class="small text-muted mb-0">
+                    The AI assistant is context-aware and knows about
+                    this specific prediction model and dataset.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Right: Chat interface -->
+        <div class="col-md-8">
+            <div class="card shadow-sm" style="height: 600px;
+                 display: flex; flex-direction: column;">
+
+                <!-- Chat header -->
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-robot"></i>
+                    <strong> DeliveryPredict AI Assistant</strong>
+                    <span class="badge bg-success ms-2 small">Online</span>
+                </div>
+
+                <!-- Chat messages -->
+                <div id="chat-messages"
+                     style="flex:1; overflow-y:auto; padding:16px;">
+
+                    <!-- Welcome message -->
+                    <div class="d-flex gap-2 mb-3">
+                        <div class="badge bg-primary rounded-circle p-2"
+                             style="height:32px;width:32px;
+                             display:flex;align-items:center;
+                             justify-content:center;">
+                            🤖
+                        </div>
+                        <div class="card p-3 bg-light"
+                             style="max-width:80%;border-radius:12px
+                             12px 12px 0;">
+                            <p class="mb-0 small">
+                                Hello! I am the DeliveryPredict AI Assistant.
+                                I can help you understand delivery time
+                                predictions, explain model metrics, and
+                                answer questions about factors affecting
+                                delivery time. How can I help you?
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Input area -->
+                <div class="card-footer p-3">
+                    <div class="input-group">
+                        <input type="text"
+                               class="form-control"
+                               id="chat-input"
+                               placeholder="Ask me anything..."
+                               onkeypress="handleKey(event)">
+                        <button class="btn btn-primary"
+                                onclick="sendMessage()">
+                            <i class="bi bi-send"></i> Send
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function handleKey(e) {
+    if (e.key === 'Enter') sendMessage();
+}
+
+function sendQuick(msg) {
+    document.getElementById('chat-input').value = msg;
+    sendMessage();
+}
+
+function appendMessage(text, role) {
+    const container = document.getElementById('chat-messages');
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'd-flex gap-2 mb-3 ' +
+                        (role === 'user' ? 'flex-row-reverse' : '');
+
+    const avatar = document.createElement('div');
+    avatar.className = 'badge rounded-circle p-2 ' +
+                       (role === 'user' ? 'bg-success' : 'bg-primary');
+    avatar.style.cssText =
+        'height:32px;width:32px;display:flex;' +
+        'align-items:center;justify-content:center;flex-shrink:0;';
+    avatar.textContent = role === 'user' ? '👤' : '🤖';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'card p-3 small ' +
+                       (role === 'user' ? 'bg-primary text-white' : 'bg-light');
+    bubble.style.cssText =
+        'max-width:80%;border-radius:' +
+        (role === 'user' ? '12px 12px 0 12px' : '12px 12px 12px 0') + ';';
+    bubble.textContent = text;
+
+    wrapper.appendChild(avatar);
+    wrapper.appendChild(bubble);
+    container.appendChild(wrapper);
+
+    // Scroll to bottom
+    container.scrollTop = container.scrollHeight;
+}
+
+function appendTyping() {
+    const container = document.getElementById('chat-messages');
+    const wrapper   = document.createElement('div');
+    wrapper.className = 'd-flex gap-2 mb-3';
+    wrapper.id        = 'typing-indicator';
+    wrapper.innerHTML =
+        '<div class="badge bg-primary rounded-circle p-2" ' +
+        'style="height:32px;width:32px;display:flex;' +
+        'align-items:center;justify-content:center;">🤖</div>' +
+        '<div class="card p-3 bg-light small" ' +
+        'style="border-radius:12px 12px 12px 0;">' +
+        '<span class="text-muted">Typing...</span></div>';
+    container.appendChild(wrapper);
+    container.scrollTop = container.scrollHeight;
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const msg   = input.value.trim();
+    if (!msg) return;
+
+    input.value = '';
+    appendMessage(msg, 'user');
+    appendTyping();
+
+    try {
+        const res    = await fetch('/api/chat', {
+            method : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body   : JSON.stringify({ message: msg })
+        });
+        const result = await res.json();
+
+        // Remove typing indicator
+        const typing = document.getElementById('typing-indicator');
+        if (typing) typing.remove();
+
+        if (result.success) {
+            appendMessage(result.reply, 'bot');
+        } else {
+            appendMessage('Sorry, I encountered an error: ' +
+                          result.error, 'bot');
+        }
+
+    } catch (err) {
+        const typing = document.getElementById('typing-indicator');
+        if (typing) typing.remove();
+        appendMessage('Connection error. Please try again.', 'bot');
+    }
+}
+</script>
+{% endblock %}

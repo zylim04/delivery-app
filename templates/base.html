@@ -42,16 +42,24 @@
                        href="/predict"><i class="bi bi-stopwatch"></i> Predict</a>
                 </li>
                 <li class="nav-item">
-                   <a class="nav-link {% if request.path == '/map' %}active{% endif %}"
-                      href="/map"><i class="bi bi-map"></i> Map</a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}"
                        href="/dashboard"><i class="bi bi-bar-chart-line"></i> Dashboard</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == '/trends' %}active{% endif %}"
-                      href="/trends"><i class="bi bi-graph-down-arrow"></i> Trends</a>
+                       href="/trends"><i class="bi bi-graph-down-arrow"></i> Trends</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/map' %}active{% endif %}"
+                       href="/map"><i class="bi bi-map"></i> Map</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/chatbot' %}active{% endif %}"
+                       href="/chatbot"><i class="bi bi-robot"></i> AI Assistant</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/dataset' %}active{% endif %}"
+                       href="/dataset"><i class="bi bi-folder2-open"></i> Dataset</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == '/performance' %}active{% endif %}"
@@ -60,10 +68,6 @@
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == '/features' %}active{% endif %}"
                        href="/features"><i class="bi bi-bar-chart"></i> Features</a>
-                </li>
-                <li class="nav-item">
-                   <a class="nav-link {% if request.path == '/dataset' %}active{% endif %}"
-                       href="/dataset"><i class="bi bi-folder2-open"></i> Dataset</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == '/about' %}active{% endif %}"

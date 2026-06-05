@@ -5,3 +5,5 @@ xgboost
 numpy
 pandas
 gunicorn
+python-dotenv
+openai
