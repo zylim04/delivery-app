@@ -140,8 +140,11 @@ window.addEventListener('load', function() {
     const autoQ = sessionStorage.getItem('autoQuestion');
     if (autoQ) {
         sessionStorage.removeItem('autoQuestion');
-        document.getElementById('chat-input').value = autoQ;
-        sendMessage();
+        // Small delay to ensure chat is fully loaded
+        setTimeout(function() {
+            document.getElementById('chat-input').value = autoQ;
+            sendMessage();
+        }, 800);
     }
 });
 
