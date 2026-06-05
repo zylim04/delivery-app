@@ -1,0 +1,412 @@
+{% extends 'base.html' %}
+{% block title %}Map Route & Distance{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <h3 class="mb-2"><i class="bi bi-map"></i> Map Route & Distance</h3>
+    <p class="text-muted mb-4">
+        Click on the map to set restaurant and customer locations.
+        Distance is calculated automatically using the Haversine formula.
+    </p>
+
+    <div class="row g-4">
+
+        <!-- Left: Instructions + Results -->
+        <div class="col-md-4">
+
+            <!-- Instructions -->
+            <div class="card shadow-sm p-4 mb-3">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-info-circle text-primary"></i>
+                    How to Use
+                </h6>
+                <ol class="small text-muted ps-3">
+                    <li class="mb-2">
+                        Click <span class="badge bg-danger">Set Restaurant</span>
+                        then click on the map to place restaurant location
+                    </li>
+                    <li class="mb-2">
+                        Click <span class="badge bg-primary">Set Customer</span>
+                        then click on the map to place customer location
+                    </li>
+                    <li class="mb-2">
+                        Distance is calculated automatically
+                    </li>
+                    <li class="mb-2">
+                        Click <strong>Use in Prediction</strong> to send
+                        distance to the prediction form
+                    </li>
+                </ol>
+            </div>
+
+            <!-- Mode Buttons -->
+            <div class="card shadow-sm p-4 mb-3">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-cursor-fill"></i> Select Mode
+                </h6>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-danger"
+                            id="btn-restaurant"
+                            onclick="setMode('restaurant')">
+                        <i class="bi bi-shop"></i>
+                        Set Restaurant Location
+                    </button>
+                    <button class="btn btn-primary"
+                            id="btn-customer"
+                            onclick="setMode('customer')">
+                        <i class="bi bi-person-fill"></i>
+                        Set Customer Location
+                    </button>
+                    <button class="btn btn-outline-secondary"
+                            onclick="resetMap()">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                        Reset Map
+                    </button>
+                </div>
+
+                <!-- Current Mode Indicator -->
+                <div class="mt-3 text-center">
+                    <small class="text-muted">Current mode:</small><br>
+                    <span class="badge bg-secondary fs-6"
+                          id="mode-label">None</span>
+                </div>
+            </div>
+
+            <!-- Distance Result -->
+            <div class="card shadow-sm p-4 mb-3" id="distance-card"
+                 style="display:none;">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-rulers text-success"></i>
+                    Calculated Distance
+                </h6>
+
+                <!-- Main distance display -->
+                <div class="text-center mb-3">
+                    <div class="display-4 fw-bold text-success"
+                         id="distance-value">--</div>
+                    <div class="text-muted">kilometres</div>
+                </div>
+
+                <!-- Distance category badge -->
+                <div class="text-center mb-3">
+                    <span class="badge fs-6 p-2"
+                          id="distance-badge">--</span>
+                </div>
+
+                <hr>
+
+                <!-- Coordinates -->
+                <div class="small text-muted mb-2">
+                    <div class="mb-1">
+                        <i class="bi bi-shop text-danger"></i>
+                        <strong>Restaurant:</strong>
+                        <span id="rest-coords">--</span>
+                    </div>
+                    <div class="mb-1">
+                        <i class="bi bi-person-fill text-primary"></i>
+                        <strong>Customer:</strong>
+                        <span id="cust-coords">--</span>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Stats row -->
+                <div class="row text-center small mb-3">
+                    <div class="col-4">
+                        <div class="fw-bold text-primary"
+                             id="stat-distance">--</div>
+                        <div class="text-muted">Distance</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold text-warning"
+                             id="stat-category">--</div>
+                        <div class="text-muted">Category</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold text-success"
+                             id="stat-est">--</div>
+                        <div class="text-muted">Est. Time</div>
+                    </div>
+                </div>
+
+                <!-- Distance warning ← ADD THIS HERE -->
+                <div class="alert alert-warning small p-2 mt-2"
+                     id="distance-warning"
+                     style="display:none;">
+                </div>
+
+                <!-- Use in prediction button -->
+                <div class="d-grid">
+                    <a href="/predict"
+                       class="btn btn-success"
+                       id="use-distance-btn">
+                        <i class="bi bi-arrow-right-circle"></i>
+                        Use in Prediction
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="card shadow-sm p-3 bg-light">
+                <p class="small text-muted mb-0">
+                    <i class="bi bi-lightbulb text-warning"></i>
+                    <strong>Tip:</strong> The map is centred on India
+                    (where the dataset is from). You can zoom and pan
+                    to any location.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Right: Map -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <div id="map"
+                         style="height: 600px; border-radius: 8px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// ── Map setup ─────────────────────────────────────────────────────
+const map = L.map('map').setView([20.5937, 78.9629], 5);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// ── State ─────────────────────────────────────────────────────────
+let mode             = null;
+let restaurantMarker = null;
+let customerMarker   = null;
+let restaurantLatLng = null;
+let customerLatLng   = null;
+let routeLine        = null;
+let distancePopup    = null;
+
+// ── Custom icons ──────────────────────────────────────────────────
+const restaurantIcon = L.divIcon({
+    html: '<div style="background:#dc3545;width:22px;height:22px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-size:11px;">🏪</div>',
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+    className: ''
+});
+
+const customerIcon = L.divIcon({
+    html: '<div style="background:#0d6efd;width:22px;height:22px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-size:11px;">👤</div>',
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+    className: ''
+});
+
+// ── Set mode ──────────────────────────────────────────────────────
+function setMode(m) {
+    mode = m;
+    const label = document.getElementById('mode-label');
+    if (m === 'restaurant') {
+        label.textContent = '🏪 Setting Restaurant';
+        label.className   = 'badge bg-danger fs-6';
+    } else {
+        label.textContent = '👤 Setting Customer';
+        label.className   = 'badge bg-primary fs-6';
+    }
+    map.getContainer().style.cursor = 'crosshair';
+}
+
+// ── Map click handler ─────────────────────────────────────────────
+map.on('click', function(e) {
+    if (!mode) {
+        alert('Please click Set Restaurant or Set Customer first.');
+        return;
+    }
+
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+
+    if (mode === 'restaurant') {
+        if (restaurantMarker) map.removeLayer(restaurantMarker);
+        restaurantMarker = L.marker([lat, lng], { icon: restaurantIcon })
+            .addTo(map)
+            .bindPopup('<strong>🏪 Restaurant</strong><br>' +
+                       lat.toFixed(4) + ', ' + lng.toFixed(4))
+            .openPopup();
+        restaurantLatLng = { lat, lng };
+        document.getElementById('rest-coords').textContent =
+            lat.toFixed(4) + ', ' + lng.toFixed(4);
+
+    } else if (mode === 'customer') {
+        if (customerMarker) map.removeLayer(customerMarker);
+        customerMarker = L.marker([lat, lng], { icon: customerIcon })
+            .addTo(map)
+            .bindPopup('<strong>👤 Customer</strong><br>' +
+                       lat.toFixed(4) + ', ' + lng.toFixed(4))
+            .openPopup();
+        customerLatLng = { lat, lng };
+        document.getElementById('cust-coords').textContent =
+            lat.toFixed(4) + ', ' + lng.toFixed(4);
+    }
+
+    // Reset mode
+    mode = null;
+    document.getElementById('mode-label').textContent = 'None';
+    document.getElementById('mode-label').className   = 'badge bg-secondary fs-6';
+    map.getContainer().style.cursor = '';
+
+    // Calculate distance if both markers placed
+    if (restaurantLatLng && customerLatLng) {
+        calculateDistance();
+    }
+});
+
+// ── Haversine distance formula ────────────────────────────────────
+function haversine(lat1, lon1, lat2, lon2) {
+    const R    = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a    = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                 Math.cos(lat1 * Math.PI / 180) *
+                 Math.cos(lat2 * Math.PI / 180) *
+                 Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c    = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+// ── Calculate and display distance ────────────────────────────────
+function calculateDistance() {
+    const dist = haversine(
+        restaurantLatLng.lat, restaurantLatLng.lng,
+        customerLatLng.lat,   customerLatLng.lng
+    ).toFixed(2);
+
+    // Warn if distance is outside training range
+    if (parseFloat(dist) > 25) {
+        const warningEl = document.getElementById('distance-warning');
+        warningEl.style.display = 'block';
+        warningEl.innerHTML =
+            '<i class="bi bi-exclamation-triangle-fill"></i> ' +
+            '<strong>Warning:</strong> ' + dist + ' km exceeds the model training range. ' +
+            '99% of training data is below 21 km. ' +
+            'Consider selecting locations closer together for reliable predictions.';
+    } else {
+        document.getElementById('distance-warning').style.display = 'none';
+    }
+
+    // Distance category
+    let category, badgeClass, estTime;
+    if (dist <= 5) {
+        category   = 'Short';
+        badgeClass = 'bg-success';
+        estTime    = '20–25 min';
+    } else if (dist <= 10) {
+        category   = 'Medium';
+        badgeClass = 'bg-warning text-dark';
+        estTime    = '25–35 min';
+    } else if (dist <= 20) {
+        category   = 'Long';
+        badgeClass = 'bg-orange';
+        estTime    = '35–45 min';
+    } else {
+        category   = 'Very Long';
+        badgeClass = 'bg-danger';
+        estTime    = '45+ min';
+    }
+
+    // Show distance card
+    document.getElementById('distance-card').style.display = 'block';
+    document.getElementById('distance-value').textContent  = dist;
+
+    // Badge
+    const badge       = document.getElementById('distance-badge');
+    badge.textContent = category + ' Distance';
+    badge.className   = 'badge fs-6 p-2 ' + badgeClass;
+
+    // Stats row
+    document.getElementById('stat-distance').textContent = dist + ' km';
+    document.getElementById('stat-category').textContent = category;
+    document.getElementById('stat-est').textContent      = estTime;
+
+    // Draw dashed line between markers
+    if (routeLine) map.removeLayer(routeLine);
+    routeLine = L.polyline([
+        [restaurantLatLng.lat, restaurantLatLng.lng],
+        [customerLatLng.lat,   customerLatLng.lng]
+    ], {
+        color    : '#198754',
+        weight   : 3,
+        dashArray: '8 4'
+    }).addTo(map);
+
+    // Show distance label in middle of line
+    const midLat = (restaurantLatLng.lat + customerLatLng.lat) / 2;
+    const midLng = (restaurantLatLng.lng + customerLatLng.lng) / 2;
+
+    if (distancePopup) map.removeLayer(distancePopup);
+    distancePopup = L.popup({
+        closeButton : false,
+        autoClose   : false,
+        closeOnClick: false
+    })
+    .setLatLng([midLat, midLng])
+    .setContent(
+        '<div style="text-align:center;font-weight:bold;' +
+        'color:#198754;font-size:13px;">📏 ' + dist + ' km</div>'
+    )
+    .openOn(map);
+
+    // Fit map to show both markers with padding
+    map.fitBounds([
+        [restaurantLatLng.lat, restaurantLatLng.lng],
+        [customerLatLng.lat,   customerLatLng.lng]
+    ], { padding: [80, 80] });
+
+    // Update Use in Prediction button
+    const btn     = document.getElementById('use-distance-btn');
+    btn.href      = '/predict?distance=' + dist;
+    btn.innerHTML = '<i class="bi bi-arrow-right-circle"></i> Use ' +
+                    dist + ' km in Prediction';
+}
+
+// ── Reset map ─────────────────────────────────────────────────────
+function resetMap() {
+    if (restaurantMarker) map.removeLayer(restaurantMarker);
+    if (customerMarker)   map.removeLayer(customerMarker);
+    if (routeLine)        map.removeLayer(routeLine);
+    if (distancePopup)    map.removeLayer(distancePopup);
+
+    restaurantMarker = null;
+    customerMarker   = null;
+    restaurantLatLng = null;
+    customerLatLng   = null;
+    routeLine        = null;
+    distancePopup    = null;
+    mode             = null;
+
+    document.getElementById('distance-card').style.display  = 'none';
+    document.getElementById('mode-label').textContent       = 'None';
+    document.getElementById('mode-label').className         = 'badge bg-secondary fs-6';
+    document.getElementById('rest-coords').textContent      = '--';
+    document.getElementById('cust-coords').textContent      = '--';
+    document.getElementById('distance-value').textContent   = '--';
+    document.getElementById('stat-distance').textContent    = '--';
+    document.getElementById('stat-category').textContent    = '--';
+    document.getElementById('stat-est').textContent         = '--';
+    map.getContainer().style.cursor = '';
+    map.setView([20.5937, 78.9629], 5);
+}
+</script>
+{% endblock %}

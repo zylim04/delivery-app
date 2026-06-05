@@ -292,6 +292,10 @@ def trends():
         multi_data   = json.dumps(multi_data),
         stats        = stats
     )
+    
+@app.route('/map')
+def map_page():
+    return render_template('map.html')
 
 # ── Prediction API ────────────────────────────────────────────────
 @app.route('/api/predict', methods=['POST'])
