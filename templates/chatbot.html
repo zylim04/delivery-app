@@ -137,18 +137,17 @@
 <script>
 // ── Auto-send question from predict page ──────────────────────────
 window.addEventListener('load', function() {
-    const autoQ = sessionStorage.getItem('autoQuestion');
+    // Read question from URL parameter
+    const params = new URLSearchParams(window.location.search);
+    const autoQ  = params.get('q');
     if (autoQ) {
-        sessionStorage.removeItem('autoQuestion');
-        // Small delay to ensure chat is fully loaded
         setTimeout(function() {
-            document.getElementById('chat-input').value = autoQ;
+            document.getElementById('chat-input').value = decodeURIComponent(autoQ);
             sendMessage();
-        }, 800);
+        }, 1000);
     }
 });
 
-function handleKey(e) {
 
 function handleKey(e) {
     if (e.key === 'Enter') sendMessage();

@@ -401,19 +401,17 @@ function explainWithAI() {
 
     const question =
         'My delivery prediction is ' + time + ' minutes (' + status + '). ' +
-        'The conditions are: traffic=' + traffic +
+        'Conditions: traffic=' + traffic +
         ', weather=' + weather +
         ', distance=' + distance + ' km' +
         ', festival=' + festival +
         ', vehicle=' + vehicle +
         ', prep time=' + prep + ' min. ' +
-        'Please explain why this prediction is ' + status +
-        ' and give suggestions to reduce the delivery time.';
+        'Explain why this prediction is ' + status +
+        ' and suggest how to reduce delivery time.';
 
-    // Store question in sessionStorage and redirect to chatbot
-    sessionStorage.setItem('autoQuestion', question);
-    window.location.href = '/chatbot';
+    // Pass question as URL parameter
+    window.location.href = '/chatbot?q=' + encodeURIComponent(question);
 }
-
 </script>
 {% endblock %}
