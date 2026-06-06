@@ -3,22 +3,52 @@
 
 {% block content %}
 <div class="container mt-4 mb-5">
-    <h3 class="mb-4">
+    <h3 class="mb-2">
         <i class="bi bi-bar-chart"></i> Feature Importance
     </h3>
+    <p class="text-muted mb-4">
+        {% if use_shap %}
+        Feature importance computed using
+        <strong>SHAP (SHapley Additive exPlanations)</strong>
+        on a sample of 500 training records.
+        {% else %}
+        Feature importance computed using hybrid
+        Random Forest + Mutual Information selection.
+        {% endif %}
+    </p>
+
+    {% if use_shap %}
+    <div class="alert alert-info d-flex align-items-center mb-4">
+        <i class="bi bi-info-circle-fill fs-5 me-3"></i>
+        <div class="small">
+            <strong>What is SHAP?</strong>
+            SHAP values measure the average contribution of each feature
+            to the model's prediction across all training samples.
+            Higher SHAP value = stronger impact on delivery time prediction.
+        </div>
+    </div>
+    {% endif %}
 
     <div class="row g-4">
 
         <div class="col-md-8">
             <div class="card shadow-sm p-4">
-                <h5>Top Features Affecting Delivery Time</h5>
+                <h5 class="mb-3">
+                    {% if use_shap %}
+                    SHAP Feature Importance — Mean |SHAP Value|
+                    {% else %}
+                    Feature Importance Score
+                    {% endif %}
+                </h5>
                 <canvas id="featureChart" height="400"></canvas>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card shadow-sm p-4 h-100">
-                <h5 class="text-primary">🔍 Key Findings</h5>
+            <div class="card shadow-sm p-4 mb-4">
+                <h6 class="text-primary fw-bold mb-3">
+                    <i class="bi bi-search"></i> Key Findings
+                </h6>
                 <ul class="small text-muted">
                     <li class="mb-2">
                         <strong>distance_km</strong> is the strongest
@@ -34,20 +64,35 @@
                     </li>
                     <li class="mb-2">
                         <strong>multiple_deliveries</strong> — riders
-                        handling multiple orders take longer.
+                        handling multiple orders take longer per order.
                     </li>
                     <li class="mb-2">
                         <strong>road_traffic_density</strong> — Jam and
                         High traffic significantly increase delivery time.
                     </li>
                 </ul>
-                <hr>
-                <p class="small text-muted">
-                    Feature importance was computed using a combination
-                    of Random Forest importance scores and Mutual
-                    Information (hybrid selection).
+            </div>
+
+            {% if use_shap %}
+            <div class="card shadow-sm p-4">
+                <h6 class="text-primary fw-bold mb-3">
+                    <i class="bi bi-info-circle"></i> About SHAP
+                </h6>
+                <p class="small text-muted mb-2">
+                    SHAP (SHapley Additive exPlanations) is a
+                    game-theory based method for explaining ML predictions.
+                </p>
+                <p class="small text-muted mb-2">
+                    Unlike basic feature importance, SHAP accounts for
+                    feature interactions and gives consistent,
+                    mathematically rigorous explanations.
+                </p>
+                <p class="small text-muted mb-0">
+                    Values shown are mean absolute SHAP values
+                    computed on 500 training samples.
                 </p>
             </div>
+            {% endif %}
         </div>
 
     </div>
@@ -65,11 +110,12 @@ new Chart(ctx, {
     data: {
         labels: data.features,
         datasets: [{
-            label: 'Importance Score',
-            data: data.scores,
-            backgroundColor: data.scores.map((s, i) =>
+            label: '{% if use_shap %}Mean |SHAP Value|{% else %}Importance Score{% endif %}',
+            data: data.values,
+            backgroundColor: data.values.map((s, i) =>
                 i === 0 ? '#198754' :
-                i < 3   ? '#0d6efd' : '#6c757d'
+                i < 3   ? '#0d6efd' :
+                i < 8   ? '#6f42c1' : '#6c757d'
             ),
             borderRadius: 4
         }]
@@ -81,14 +127,19 @@ new Chart(ctx, {
             legend: { display: false },
             tooltip: {
                 callbacks: {
-                    label: ctx => ' Score: ' + ctx.raw.toFixed(4)
+                    label: ctx =>
+                        ' {% if use_shap %}SHAP{% else %}Score{% endif %}: ' +
+                        ctx.raw.toFixed(4)
                 }
             }
         },
         scales: {
             x: {
                 beginAtZero: true,
-                title: { display: true, text: 'Importance Score' }
+                title: {
+                    display: true,
+                    text: '{% if use_shap %}Mean |SHAP Value|{% else %}Importance Score{% endif %}'
+                }
             }
         }
     }

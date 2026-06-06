@@ -51,29 +51,38 @@ def about():
 def features():
     import json
 
-    # Feature importance from your RF model used in feature selection
-    feature_importance_data = {
-        'features': [
-            'distance_km', 'delivery_person_ratings',
-            'prep_time_min', 'multiple_deliveries',
-            'delivery_person_age', 'road_traffic_density_Jam',
-            'road_traffic_density_High', 'weather_conditions_Fog',
-            'order_hour', 'city_Metropolitian',
-            'festival_Yes', 'type_of_vehicle_motorcycle',
-            'is_weekend', 'peak_hour_Evening Peak',
-            'road_traffic_density_Medium', 'vehicle_condition',
-            'day_of_week', 'type_of_order_Snack'
-        ],
-        'scores': [
-            0.28, 0.18, 0.12, 0.09, 0.07, 0.06,
-            0.04, 0.03, 0.03, 0.02, 0.02, 0.01,
-            0.01, 0.01, 0.01, 0.01, 0.005, 0.005
-        ]
-    }
+    # Load pre-computed SHAP values
+    shap_path = os.path.join(BASE, 'model/shap_values.json')
+
+    if os.path.exists(shap_path):
+        with open(shap_path, 'r') as f:
+            shap_data = json.load(f)
+        use_shap = True
+    else:
+        # Fallback to hardcoded values
+        shap_data = {
+            'features': [
+                'distance_km', 'delivery_person_ratings',
+                'prep_time_min', 'multiple_deliveries',
+                'delivery_person_age', 'road_traffic_density_Jam',
+                'road_traffic_density_High', 'weather_conditions_Fog',
+                'order_hour', 'city_Metropolitian',
+                'festival_Yes', 'type_of_vehicle_motorcycle',
+                'is_weekend', 'peak_hour_Evening Peak',
+                'road_traffic_density_Medium', 'vehicle_condition',
+                'day_of_week', 'type_of_order_Snack'
+            ],
+            'values': [
+                0.28, 0.18, 0.12, 0.09, 0.07, 0.06,
+                0.04, 0.03, 0.03, 0.02, 0.02, 0.01,
+                0.01, 0.01, 0.01, 0.01, 0.005, 0.005
+            ]
+        }
+        use_shap = False
 
     return render_template('features.html',
-                           data=json.dumps(feature_importance_data))
-
+                           data=json.dumps(shap_data),
+                           use_shap=use_shap)
 
 @app.route('/dataset')
 def dataset():

@@ -7,3 +7,4 @@ pandas
 gunicorn
 python-dotenv
 groq
+shap
