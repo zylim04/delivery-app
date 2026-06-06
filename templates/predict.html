@@ -213,19 +213,78 @@
                         </div>
                     </div>
                     <hr>
-                    <div class="d-grid mt-2">
+                    <div class="d-grid gap-2 mt-2">
                         <button class="btn btn-outline-primary btn-sm"
                                 onclick="explainWithAI()">
                             <i class="bi bi-robot"></i>
                             Explain Result with AI
                         </button>
-                    </div>     
+                        <button class="btn btn-outline-secondary btn-sm"
+                                onclick="viewSimilarCases()">
+                            <i class="bi bi-table"></i>
+                            View Similar Past Cases
+                        </button>
+                    </div>
                 </div>
             </div>
 
         </div>
     </div>
 </div>
+
+<!-- Similar Cases Modal -->
+<div class="modal fade" id="similarModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-table"></i>
+                    Similar Past Delivery Cases
+                </h5>
+                <button type="button" class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3">
+                    These are real delivery records from the dataset
+                    with similar traffic and distance conditions.
+                </p>
+                <div id="similar-loading" class="text-center p-4">
+                    <div class="spinner-border text-primary"></div>
+                    <p class="mt-2 text-muted">Loading similar cases...</p>
+                </div>
+                <div id="similar-table" style="display:none;">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered small">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Traffic</th>
+                                    <th>Weather</th>
+                                    <th>City</th>
+                                    <th>Vehicle</th>
+                                    <th>Festival</th>
+                                    <th>Distance (km)</th>
+                                    <th>Actual Time (min)</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="similar-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <small class="text-muted me-auto">
+                    Showing up to 8 similar records from 42,592 training records
+                </small>
+                <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -410,8 +469,83 @@ function explainWithAI() {
         'Explain why this prediction is ' + status +
         ' and suggest how to reduce delivery time.';
 
-    // Pass question as URL parameter
     window.location.href = '/chatbot?q=' + encodeURIComponent(question);
 }
+
+// ── View Similar Past Cases ───────────────────────────────────────
+async function viewSimilarCases() {
+    const time = document.getElementById('result-time').textContent;
+    if (time === '--') {
+        alert('Please run a prediction first.');
+        return;
+    }
+
+    const modal = new bootstrap.Modal(
+        document.getElementById('similarModal')
+    );
+    modal.show();
+
+    document.getElementById('similar-loading').style.display = 'block';
+    document.getElementById('similar-table').style.display   = 'none';
+
+    const payload = {
+        road_traffic_density : document.getElementById('road_traffic_density').value,
+        weather_conditions   : document.getElementById('weather_conditions').value,
+        city                 : document.getElementById('city').value,
+        distance_km          : document.getElementById('distance_km').value
+    };
+
+    try {
+        const res    = await fetch('/api/similar-cases', {
+            method : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body   : JSON.stringify(payload)
+        });
+        const result = await res.json();
+
+        document.getElementById('similar-loading').style.display = 'none';
+
+        if (result.success) {
+            const tbody = document.getElementById('similar-tbody');
+            tbody.innerHTML = '';
+
+            result.cases.forEach((c, i) => {
+                let status, color;
+                if (c.actual <= 25)      { status = 'Normal';       color = 'success'; }
+                else if (c.actual <= 35) { status = 'Slight Delay'; color = 'warning'; }
+                else                     { status = 'High Delay';   color = 'danger';  }
+
+                tbody.innerHTML +=
+                    '<tr>' +
+                    '<td>' + (i+1) + '</td>' +
+                    '<td>' + c.traffic  + '</td>' +
+                    '<td>' + c.weather  + '</td>' +
+                    '<td>' + c.city     + '</td>' +
+                    '<td>' + c.vehicle  + '</td>' +
+                    '<td>' + c.festival + '</td>' +
+                    '<td>' + c.distance + '</td>' +
+                    '<td><strong>' + c.actual + ' min</strong></td>' +
+                    '<td><span class="badge bg-' + color + '">' +
+                    status + '</span></td>' +
+                    '</tr>';
+            });
+
+            document.getElementById('similar-table').style.display = 'block';
+        } else {
+            document.getElementById('similar-tbody').innerHTML =
+                '<tr><td colspan="9" class="text-center text-danger">' +
+                'Error: ' + result.error + '</td></tr>';
+            document.getElementById('similar-table').style.display = 'block';
+        }
+
+    } catch (err) {
+        document.getElementById('similar-loading').style.display = 'none';
+        document.getElementById('similar-tbody').innerHTML =
+            '<tr><td colspan="9" class="text-center text-danger">' +
+            'Connection error. Please try again.</td></tr>';
+        document.getElementById('similar-table').style.display = 'block';
+    }
+}
+
 </script>
 {% endblock %}

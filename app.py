@@ -511,8 +511,92 @@ def predict():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
+      
+@app.route('/api/similar-cases', methods=['POST'])
+def similar_cases():
+    try:
+        import pandas as pd
+        data = request.get_json()
+
+        df = pd.read_csv(os.path.join(BASE, 'Zomato Dataset.csv'))
+        df.columns = df.columns.str.strip()
+        df = df.dropna(subset=['Time_taken (min)'])
+
+        # Filter by similar conditions
+        traffic = data.get('road_traffic_density', '')
+        weather = data.get('weather_conditions', '')
+        city    = data.get('city', '')
+        dist    = float(data.get('distance_km', 5))
+
+        # Match same traffic + city, similar distance (±3 km)
+        filtered = df[
+            (df['Road_traffic_density'] == traffic) &
+            (df['City'] == city)
+        ].copy()
+
+        # If too few results, relax filter
+        if len(filtered) < 5:
+            filtered = df[
+                df['Road_traffic_density'] == traffic
+            ].copy()
+
+        # Calculate distance from Haversine
+        def haversine(lat1, lon1, lat2, lon2):
+            import math
+            R = 6371
+            dLat = math.radians(lat2 - lat1)
+            dLon = math.radians(lon2 - lon1)
+            a = (math.sin(dLat/2)**2 +
+                 math.cos(math.radians(lat1)) *
+                 math.cos(math.radians(lat2)) *
+                 math.sin(dLon/2)**2)
+            return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
+        filtered['distance_km'] = filtered.apply(
+            lambda r: haversine(
+                r['Restaurant_latitude'],
+                r['Restaurant_longitude'],
+                r['Delivery_location_latitude'],
+                r['Delivery_location_longitude']
+            ) if all(pd.notna([
+                r['Restaurant_latitude'],
+                r['Restaurant_longitude'],
+                r['Delivery_location_latitude'],
+                r['Delivery_location_longitude']
+            ])) else 0, axis=1
+        )
+
+        # Filter similar distance ±4 km
+        similar = filtered[
+            (filtered['distance_km'] >= dist - 4) &
+            (filtered['distance_km'] <= dist + 4)
+        ].copy()
+
+        if len(similar) < 5:
+            similar = filtered.copy()
+
+        # Sample top 8 records
+        similar = similar.sample(
+            min(8, len(similar)), random_state=42
+        )
+
+        # Build result
+        results = []
+        for _, row in similar.iterrows():
+            results.append({
+                'traffic'  : str(row.get('Road_traffic_density', '')),
+                'weather'  : str(row.get('Weather_conditions', '')),
+                'city'     : str(row.get('City', '')),
+                'vehicle'  : str(row.get('Type_of_vehicle', '')),
+                'festival' : str(row.get('Festival', '')),
+                'distance' : round(float(row.get('distance_km', 0)), 1),
+                'actual'   : int(row.get('Time_taken (min)', 0))
+            })
+
+        return jsonify({'success': True, 'cases': results})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True)
-    
-    
+    app.run(debug=True, port=5001)
