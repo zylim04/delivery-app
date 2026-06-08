@@ -89,22 +89,45 @@
 {% block content %}{% endblock %}
 
 <footer class="mt-5">
-    <div class="container text-center">
-        <p class="mb-1">
-            Built with
-            <strong>Flask</strong> ·
-            <strong>XGBoost</strong> ·
-            <strong>Bootstrap 5</strong> ·
-            <strong>Groq AI API</strong> ·
-            <strong>Leaflet.js</strong>
-        </p>
-        <p class="mb-0 small">
-            Final Year Project © 2025 &nbsp;|&nbsp;
-            Zomato Food Delivery Time Prediction
-        </p>
+    <div class="container">
+        <hr class="border-secondary">
+        <div class="row align-items-center py-3">
+
+            <!-- Left: Project name -->
+            <div class="col-md-4 text-center text-md-start mb-3 mb-md-0">
+                <div class="fw-bold text-white">
+                    <i class="bi bi-truck"></i> DeliveryPredict AI
+                </div>
+                <div class="small" style="color:#aaa;">
+                    Zomato Food Delivery Time Prediction
+                </div>
+            </div>
+
+            <!-- Centre: Tools -->
+            <div class="col-md-4 text-center mb-3 mb-md-0">
+                <div class="small" style="color:#aaa;">Built with</div>
+                <div class="mt-1">
+                    <span class="badge bg-secondary me-1">Flask</span>
+                    <span class="badge bg-success me-1">XGBoost</span>
+                    <span class="badge bg-primary me-1">Bootstrap 5</span>
+                    <span class="badge bg-warning text-dark me-1">Groq AI</span>
+                    <span class="badge bg-info text-dark">Leaflet.js</span>
+                </div>
+            </div>
+
+            <!-- Right: Copyright -->
+            <div class="col-md-4 text-center text-md-end">
+                <div class="small" style="color:#aaa;">
+                    Final Year Project © 2026
+                </div>
+                <div class="small" style="color:#777;">
+                    Asia Pacific University
+                </div>
+            </div>
+
+        </div>
     </div>
 </footer>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% block scripts %}{% endblock %}
 </body>
