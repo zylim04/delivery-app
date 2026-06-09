@@ -51,38 +51,30 @@ def about():
 def features():
     import json
 
-    # Load pre-computed SHAP values
     shap_path = os.path.join(BASE, 'model/shap_values.json')
+    rf_path   = os.path.join(BASE, 'model/rf_importance.json')
 
     if os.path.exists(shap_path):
         with open(shap_path, 'r') as f:
             shap_data = json.load(f)
         use_shap = True
     else:
-        # Fallback to hardcoded values
-        shap_data = {
-            'features': [
-                'distance_km', 'delivery_person_ratings',
-                'prep_time_min', 'multiple_deliveries',
-                'delivery_person_age', 'road_traffic_density_Jam',
-                'road_traffic_density_High', 'weather_conditions_Fog',
-                'order_hour', 'city_Metropolitian',
-                'festival_Yes', 'type_of_vehicle_motorcycle',
-                'is_weekend', 'peak_hour_Evening Peak',
-                'road_traffic_density_Medium', 'vehicle_condition',
-                'day_of_week', 'type_of_order_Snack'
-            ],
-            'values': [
-                0.28, 0.18, 0.12, 0.09, 0.07, 0.06,
-                0.04, 0.03, 0.03, 0.02, 0.02, 0.01,
-                0.01, 0.01, 0.01, 0.01, 0.005, 0.005
-            ]
-        }
-        use_shap = False
+        shap_data = {'features': [], 'values': []}
+        use_shap  = False
+
+    if os.path.exists(rf_path):
+        with open(rf_path, 'r') as f:
+            rf_data = json.load(f)
+        use_rf = True
+    else:
+        rf_data = {'features': [], 'values': []}
+        use_rf  = False
 
     return render_template('features.html',
-                           data=json.dumps(shap_data),
-                           use_shap=use_shap)
+                           shap_data = json.dumps(shap_data),
+                           rf_data   = json.dumps(rf_data),
+                           use_shap  = use_shap,
+                           use_rf    = use_rf)
 
 @app.route('/dataset')
 def dataset():
