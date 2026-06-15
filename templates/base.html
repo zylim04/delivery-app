@@ -6,18 +6,235 @@
     <title>{% block title %}Delivery Time Predictor{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
     <style>
-        body      { background-color: #f8f9fa; }
-        .navbar   { background: linear-gradient(135deg, #1a1a2e, #16213e); }
-        .nav-link { color: #ccc !important; font-weight: 500; }
-        .nav-link:hover, .nav-link.active { color: #fff !important; }
-        .hero     { background: linear-gradient(135deg, #1a1a2e, #0f3460);
-                    color: white; padding: 80px 0; }
-        .kpi-card { border: none; border-radius: 12px;
-                    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-                    transition: transform 0.2s; }
-        .kpi-card:hover { transform: translateY(-3px); }
-        footer    { background: #1a1a2e; color: #aaa; padding: 20px 0; }
+
+    /* Force the system font on EVERY element, overriding any
+       leftover 'JetBrains Mono' / 'Space Grotesk' on any page */
+    * {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                     "Helvetica Neue", Arial, sans-serif !important;
+    }
+    
+    :root {
+        --dp-muted-light: #6B7480;
+        --dp-ink: #0E1116;
+        --dp-panel: #171C24;
+        --dp-text: #E7ECF2;
+        --dp-soft: #AEB9C9;
+        --dp-muted: #7E8CA0;
+        --dp-accent: #FF6B4A;
+        --dp-low: #3ECF8E;
+        --dp-medium: #FFC857;
+        --dp-jam: #FF5C5C;
+    }
+
+    body      { background-color: #f8f9fa; }
+
+    .dp-mono { font-weight: 500; }
+
+    .dp-eyebrow-light {
+        font-size: .72rem;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--dp-accent);
+        font-weight: 600;
+        display: block;
+        margin-bottom: .4rem;
+    }
+    .dp-section-title {
+        font-weight: 600;
+    }
+
+    .dp-spec {
+        font-weight: 600;
+        font-size: .68rem;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--dp-muted-light);
+        display: block;
+        margin-bottom: .4rem;
+    }
+
+    /* ── Navbar ─────────────────────────────────────────────────── */
+    .navbar   { background: linear-gradient(135deg, var(--dp-ink), var(--dp-panel)); }
+    .navbar-brand {
+        font-weight: 700;
+        letter-spacing: .02em;
+    }
+    .nav-link {
+        color: var(--dp-soft) !important;
+        font-weight: 500;
+        font-size: .92rem;
+        border-bottom: 2px solid transparent;
+        transition: color .15s ease, border-color .15s ease;
+    }
+    .nav-link:hover { color: #fff !important; }
+    .nav-link.active {
+        color: #fff !important;
+        border-bottom: 2px solid var(--dp-accent);
+    }
+
+    /* ── Hero (legacy support) ──────────────────────────────────── */
+    .hero     { background: linear-gradient(135deg, var(--dp-ink), var(--dp-panel));
+                color: white; padding: 80px 0; }
+    .kpi-card { border: none; border-radius: 12px;
+                box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+                transition: transform 0.2s; }
+    .kpi-card:hover { transform: translateY(-3px); }
+
+    /* ── Footer ─────────────────────────────────────────────────── */
+    footer {
+        background: var(--dp-ink);
+        border-top: 1px solid rgba(231,236,242,0.08);
+        color: var(--dp-soft);
+    }
+
+    /* ── Buttons ────────────────────────────────────────────────── */
+    .btn.btn-dp-primary {
+        background: var(--dp-accent);
+        border: 1px solid var(--dp-accent);
+        color: #0E1116;
+        font-weight: 600;
+    }
+    .btn.btn-dp-primary:hover { background: #ff7e5f; color: #0E1116; }
+    .btn.btn-dp-outline {
+        background: transparent;
+        border: 1px solid rgba(231,236,242,0.22);
+        color: #E7ECF2;
+    }
+    .btn.btn-dp-outline:hover { border-color: rgba(231,236,242,0.45); color: #fff; }
+    .btn.btn-dp-outline-dark {
+        background: transparent;
+        border: 1px solid rgba(14,17,22,0.18);
+        color: var(--dp-ink);
+    }
+    .btn.btn-dp-outline-dark:hover {
+        border-color: var(--dp-accent);
+        color: var(--dp-accent);
+    }
+    .btn.btn-dp-primary:focus, .btn.btn-dp-outline:focus, .btn.btn-dp-outline-dark:focus {
+        box-shadow: 0 0 0 3px rgba(255,107,74,0.35);
+    }
+
+    /* ── Feature cards ──────────────────────────────────────────── */
+    .dp-feature-card {
+        background: #fff;
+        border: 1px solid rgba(14,17,22,0.07);
+        border-radius: 14px;
+        padding: 1.75rem;
+        height: 100%;
+        transition: transform .15s ease, box-shadow .15s ease;
+        box-shadow: 0 1px 2px rgba(14,17,22,0.04);
+    }
+    .dp-feature-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(14,17,22,0.08);
+    }
+    .dp-feature-icon {
+        width: 44px; height: 44px;
+        border-radius: 12px;
+        background: rgba(255,107,74,0.12);
+        color: var(--dp-accent);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    /* ── Ticket / console card system ──────────────────────────── */
+    .dp-ticket {
+        background: var(--dp-ink);
+        border: 1px solid rgba(231,236,242,0.08);
+        border-radius: 16px;
+        padding: 1.5rem 1.75rem;
+        color: var(--dp-text);
+        border-left: 4px solid rgba(231,236,242,0.08);
+    }
+    .dp-ticket-label {
+        font-weight: 600;
+        font-size: .68rem;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--dp-muted);
+        margin-bottom: 1.25rem;
+    }
+    .dp-ticket-route { display: flex; align-items: center; margin-bottom: 1.1rem; }
+    .dp-ticket-node { font-size: 1.3rem; flex-shrink: 0; }
+    .dp-ticket-line {
+        flex: 1; height: 0;
+        border-top: 2px dashed var(--dp-muted);
+        margin: 0 12px;
+        transition: border-color .3s ease;
+    }
+    .dp-ticket-line.low    { border-color: var(--dp-low); }
+    .dp-ticket-line.medium { border-color: var(--dp-medium); }
+    .dp-ticket-line.jam    { border-color: var(--dp-jam); }
+
+    .dp-chip {
+        display: inline-block;
+        font-weight: 600;
+        font-size: .72rem;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        padding: .3rem .7rem;
+        border-radius: 999px;
+        transition: background .3s ease, color .3s ease, border-color .3s ease;
+    }
+
+    .dp-chip.low {
+        background: rgba(62,207,142,0.12); color: var(--dp-low);
+        border: 1px solid rgba(62,207,142,0.35);
+    }
+    .dp-chip.medium {
+        background: rgba(255,200,87,0.12); color: var(--dp-medium);
+        border: 1px solid rgba(255,200,87,0.35);
+    }
+    .dp-chip.jam {
+        background: rgba(255,92,92,0.12); color: var(--dp-jam);
+        border: 1px solid rgba(255,92,92,0.35);
+    }
+    .dp-chip.blue {
+        background: rgba(91,141,239,0.12); color: #5B8DEF;
+        border: 1px solid rgba(91,141,239,0.35);
+    }
+    .dp-chip.high {
+        background: rgba(255,159,90,0.12); color: #FF9F5A;
+        border: 1px solid rgba(255,159,90,0.35);
+    }
+    .dp-chip.accent {
+        background: rgba(255,107,74,0.12); color: var(--dp-accent);
+        border: 1px solid rgba(255,107,74,0.35);
+    }
+    .dp-chip.neutral {
+        background: rgba(126,140,160,0.12); color: var(--dp-muted);
+        border: 1px solid rgba(126,140,160,0.3);
+    }
+
+    .dp-chip-sm {
+        font-size: .62rem;
+        padding: .22rem .55rem;
+        letter-spacing: .04em;
+        white-space: nowrap;
+    }
+
+    .dp-ticket-eta {
+        font-weight: 600;
+        font-size: 2.75rem;
+        line-height: 1;
+        margin-bottom: .5rem;
+    }
+    .dp-ticket-eta-unit {
+        font-size: 1.05rem;
+        color: var(--dp-muted);
+        margin-left: .35rem;
+    }
+
+    .dp-ticket-conditions {
+        font-weight: 500;
+        font-size: .82rem;
+        color: var(--dp-soft);
+    }
+
     </style>
 </head>
 <body>
@@ -86,37 +303,36 @@
 
 <footer class="mt-5">
     <div class="container">
-        <hr class="border-secondary">
-        <div class="row align-items-center py-3">
+        <div class="row align-items-center py-4">
 
             <!-- Left: Project name -->
-            <div class="col-md-4 text-center text-md-start mb-3 mb-md-0">
-                <div class="fw-bold text-white">
-                    <i class="bi bi-truck"></i> DeliveryPredict AI
+            <div class="col-md-3 text-center text-md-start mb-3 mb-md-0">
+                <div class="dp-section-title" style="color: var(--dp-text); font-size: 1.05rem;">
+                    <i class="bi bi-truck" style="color: var(--dp-accent);"></i> DeliveryPredict AI
                 </div>
-                <div class="small" style="color:#aaa;">
+                <div class="dp-mono mt-1" style="color: var(--dp-muted); font-size: .7rem; letter-spacing: .06em;">
                     Zomato Food Delivery Time Prediction
                 </div>
             </div>
 
             <!-- Centre: Tools -->
-            <div class="col-md-4 text-center mb-3 mb-md-0">
-                <div class="small" style="color:#aaa;">Built with</div>
-                <div class="mt-1">
-                    <span class="badge bg-secondary me-1">Flask</span>
-                    <span class="badge bg-success me-1">XGBoost</span>
-                    <span class="badge bg-primary me-1">Bootstrap 5</span>
-                    <span class="badge bg-warning text-dark me-1">Groq AI</span>
-                    <span class="badge bg-info text-dark">Leaflet.js</span>
+            <div class="col-md-6 text-center mb-3 mb-md-0">
+                <div class="dp-eyebrow-light mb-2">Built With</div>
+                <div class="d-flex flex-nowrap justify-content-center gap-1">
+                    <span class="dp-chip dp-chip-sm neutral">Flask</span>
+                    <span class="dp-chip dp-chip-sm low">XGBoost</span>
+                    <span class="dp-chip dp-chip-sm blue">Bootstrap 5</span>
+                    <span class="dp-chip dp-chip-sm medium">Groq AI</span>
+                    <span class="dp-chip dp-chip-sm accent">Leaflet.js</span>
                 </div>
             </div>
 
             <!-- Right: Copyright -->
-            <div class="col-md-4 text-center text-md-end">
-                <div class="small" style="color:#aaa;">
+            <div class="col-md-3 text-center text-md-end">
+                <div class="dp-mono" style="color: var(--dp-soft); font-size: .75rem;">
                     Final Year Project © 2026
                 </div>
-                <div class="small" style="color:#777;">
+                <div class="dp-mono" style="color: var(--dp-muted); font-size: .7rem;">
                     Asia Pacific University
                 </div>
             </div>
@@ -124,6 +340,7 @@
         </div>
     </div>
 </footer>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% block scripts %}{% endblock %}
 </body>

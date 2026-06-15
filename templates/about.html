@@ -2,20 +2,128 @@
 {% block title %}About{% endblock %}
 
 {% block content %}
+<style>
+/* Extra chip variants for this page */
+.dp-chip.accent {
+    background: rgba(255,107,74,0.12); color: var(--dp-accent);
+    border: 1px solid rgba(255,107,74,0.35);
+}
+.dp-chip.blue {
+    background: rgba(91,141,239,0.12); color: #5B8DEF;
+    border: 1px solid rgba(91,141,239,0.35);
+}
+.dp-chip.neutral {
+    background: rgba(126,140,160,0.12); color: var(--dp-muted);
+    border: 1px solid rgba(126,140,160,0.3);
+}
+
+/* Ranked findings / objectives list */
+.dp-finding-list { list-style: none; padding-left: 0; margin: 0; }
+.dp-finding-list li {
+    display: flex; gap: .6rem;
+    padding: .5rem 0;
+    border-bottom: 1px solid rgba(14,17,22,0.06);
+    font-size: .9rem; color: #4a5260;
+}
+.dp-finding-list li:last-child { border-bottom: none; }
+.dp-finding-rank {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .7rem; font-weight: 600;
+    color: var(--dp-accent); flex-shrink: 0; width: 1.4rem;
+}
+
+/* Pipeline */
+.dp-pipeline-step {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .75rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: .5rem 1.1rem;
+    border-radius: 999px;
+    background: var(--dp-ink);
+    color: var(--dp-text);
+    border: 1px solid rgba(231,236,242,0.1);
+}
+.dp-pipeline-step.final {
+    background: rgba(62,207,142,0.12);
+    color: var(--dp-low);
+    border: 1px solid rgba(62,207,142,0.35);
+}
+.dp-pipeline-arrow {
+    color: var(--dp-muted);
+    font-size: .9rem;
+}
+
+/* Architecture nodes */
+.dp-arch-node {
+    background: var(--dp-ink);
+    border-radius: 12px;
+    padding: 1.1rem .75rem;
+    text-align: center;
+    color: var(--dp-text);
+    height: 100%;
+    border-top: 3px solid var(--dp-muted);
+}
+.dp-arch-icon { font-size: 1.8rem; margin-bottom: .4rem; }
+.dp-arch-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: .85rem;
+}
+.dp-arch-caption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .64rem;
+    color: var(--dp-muted);
+    margin-top: .2rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+.dp-arch-connector { text-align: center; }
+.dp-arch-connector .dp-arch-line {
+    border-top: 2px dashed var(--dp-muted);
+    margin: 1.5rem auto .35rem;
+    width: 80%;
+}
+.dp-arch-connector-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .64rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--dp-accent);
+}
+
+/* Flow steps */
+.dp-flow-list { list-style: none; padding-left: 0; margin: 0; }
+.dp-flow-list li {
+    display: flex; gap: .7rem;
+    padding: .4rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    color: var(--dp-soft);
+}
+.dp-flow-rank {
+    color: var(--dp-accent);
+    font-weight: 600;
+    flex-shrink: 0;
+    width: 1.6rem;
+}
+</style>
+
 <div class="container mt-4 mb-5">
-    <h3 class="mb-4"><i class="bi bi-info-circle"></i> About This Project</h3>
+    <span class="dp-eyebrow-light">Project Documentation</span>
+    <h3 class="dp-section-title mb-4"><i class="bi bi-info-circle"></i> About This Project</h3>
 
     <div class="row g-4">
 
         <!-- Project Overview -->
         <div class="col-md-8">
             <div class="card shadow-sm p-4 mb-4">
-                <h5 class="text-primary">📌 Project Overview</h5>
-                <p>This system predicts food delivery time using machine
+                <h5 class="dp-section-title"><i class="bi bi-file-text" style="color: var(--dp-accent);"></i> Project Overview</h5>
+                <p class="text-muted">This system predicts food delivery time using machine
                 learning. It was developed as a Final Year Project (FYP)
                 using a dataset of 42,592 real delivery records from
                 the Zomato platform.</p>
-                <p>The system uses XGBoost, a gradient boosting ensemble
+                <p class="text-muted mb-0">The system uses XGBoost, a gradient boosting ensemble
                 model tuned with RandomizedSearchCV and 5-fold
                 cross-validation to achieve a Test R² of 0.8393 and
                 Test RMSE of 3.78 minutes.</p>
@@ -23,37 +131,49 @@
 
             <!-- Objectives -->
             <div class="card shadow-sm p-4 mb-4">
-                <h5 class="text-primary">🎯 Research Objectives</h5>
-                <ol>
-                    <li class="mb-2">Identify key factors that influence
-                    food delivery time using feature importance analysis.</li>
-                    <li class="mb-2">Build a leakage-free preprocessing
-                    pipeline for reliable model training.</li>
-                    <li class="mb-2">Compare multiple ML models and select
-                    the best performing model.</li>
-                    <li class="mb-2">Deploy the best model as a web-based
-                    prediction system.</li>
-                </ol>
+                <h5 class="dp-section-title mb-3"><i class="bi bi-bullseye" style="color: var(--dp-accent);"></i> Research Objectives</h5>
+                <ul class="dp-finding-list">
+                    <li>
+                        <span class="dp-finding-rank">01</span>
+                        <span>Identify key factors that influence
+                        food delivery time using feature importance analysis.</span>
+                    </li>
+                    <li>
+                        <span class="dp-finding-rank">02</span>
+                        <span>Build a leakage-free preprocessing
+                        pipeline for reliable model training.</span>
+                    </li>
+                    <li>
+                        <span class="dp-finding-rank">03</span>
+                        <span>Compare multiple ML models and select
+                        the best performing model.</span>
+                    </li>
+                    <li>
+                        <span class="dp-finding-rank">04</span>
+                        <span>Deploy the best model as a web-based
+                        prediction system.</span>
+                    </li>
+                </ul>
             </div>
 
-<!-- Methodology -->
+            <!-- Methodology -->
             <div class="card shadow-sm p-4 mb-4">
-                <h5 class="text-primary">🔬 Methodology</h5>
+                <h5 class="dp-section-title mb-3"><i class="bi bi-diagram-2" style="color: var(--dp-accent);"></i> Methodology</h5>
                 <div class="d-flex flex-wrap align-items-center
-                            justify-content-center gap-2 mt-3">
-                    <span class="badge bg-primary px-3 py-2 fs-6">EDA</span>
-                    <span class="text-muted">→</span>
-                    <span class="badge bg-primary px-3 py-2 fs-6">Cleaning</span>
-                    <span class="text-muted">→</span>
-                    <span class="badge bg-primary px-3 py-2 fs-6">Feature Engineering</span>
-                    <span class="text-muted">→</span>
-                    <span class="badge bg-primary px-3 py-2 fs-6">Modelling</span>
-                    <span class="text-muted">→</span>
-                    <span class="badge bg-primary px-3 py-2 fs-6">Evaluation</span>
-                    <span class="text-muted">→</span>
-                    <span class="badge bg-success px-3 py-2 fs-6">Deployment</span>
+                            justify-content-center gap-2 mt-2">
+                    <span class="dp-pipeline-step">EDA</span>
+                    <i class="bi bi-arrow-right dp-pipeline-arrow"></i>
+                    <span class="dp-pipeline-step">Cleaning</span>
+                    <i class="bi bi-arrow-right dp-pipeline-arrow"></i>
+                    <span class="dp-pipeline-step">Feature Engineering</span>
+                    <i class="bi bi-arrow-right dp-pipeline-arrow"></i>
+                    <span class="dp-pipeline-step">Modelling</span>
+                    <i class="bi bi-arrow-right dp-pipeline-arrow"></i>
+                    <span class="dp-pipeline-step">Evaluation</span>
+                    <i class="bi bi-arrow-right dp-pipeline-arrow"></i>
+                    <span class="dp-pipeline-step final">Deployment</span>
                 </div>
-                <p class="text-muted small mt-3 text-center">
+                <p class="text-muted small mt-3 text-center mb-0">
                     The pipeline follows CRISP-DM methodology with strict
                     separation of training and test data to prevent
                     data leakage.
@@ -64,254 +184,296 @@
         <!-- Tech Stack -->
         <div class="col-md-4">
             <div class="card shadow-sm p-4 mb-4">
-                <h5 class="text-primary">🛠 Tools Used</h5>
-                <ul class="list-unstyled">
+                <h5 class="dp-section-title mb-3"><i class="bi bi-tools" style="color: var(--dp-accent);"></i> Tools Used</h5>
+                <ul class="list-unstyled small text-muted mb-0">
                     <li class="mb-2">
-                        <span class="badge bg-warning text-dark me-2">ML</span>
+                        <span class="dp-chip accent me-2">ML</span>
                         XGBoost, Random Forest, Decision Tree,
                         Linear Regression
                     </li>
                     <li class="mb-2">
-                        <span class="badge bg-success me-2">Tuning</span>
+                        <span class="dp-chip low me-2">Tuning</span>
                         RandomizedSearchCV, Optuna
                     </li>
                     <li class="mb-2">
-                        <span class="badge bg-info me-2">Pipeline</span>
+                        <span class="dp-chip blue me-2">Pipeline</span>
                         scikit-learn, pandas, numpy
                     </li>
                     <li class="mb-2">
-                        <span class="badge bg-primary me-2">Web</span>
+                        <span class="dp-chip medium me-2">Web</span>
                         Flask, Bootstrap 5, Jinja2
                     </li>
-                    <li class="mb-2">
-                        <span class="badge bg-secondary me-2">Notebook</span>
+                    <li class="mb-0">
+                        <span class="dp-chip neutral me-2">Notebook</span>
                         Jupyter Notebook, VS Code
                     </li>
                 </ul>
             </div>
 
             <!-- Dataset Info -->
-            <div class="card shadow-sm p-4 mb-4">
-                <h5 class="text-primary">📂 Dataset</h5>
-                <ul class="list-unstyled small text-muted">
-                    <li><strong>Source:</strong> Zomato Delivery Dataset</li>
-                    <li><strong>Total rows:</strong> 45,584</li>
-                    <li><strong>After cleaning:</strong> 42,592</li>
-                    <li><strong>Features:</strong> 20 input variables</li>
-                    <li><strong>Target:</strong> time_taken_min</li>
-                    <li><strong>Train split:</strong> 80% (34,073 rows)</li>
-                    <li><strong>Test split:</strong> 20% (8,519 rows)</li>
-                </ul>
+            <div class="dp-ticket shadow-sm mb-4">
+                <div class="dp-ticket-label"><i class="bi bi-folder2-open"></i> Dataset</div>
+                <div class="dp-mono small" style="color: var(--dp-text); line-height: 1.9;">
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--dp-muted);">SOURCE</span>
+                        <span>Zomato Delivery</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--dp-muted);">TOTAL ROWS</span>
+                        <span>45,584</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--dp-muted);">AFTER CLEANING</span>
+                        <span>42,592</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--dp-muted);">FEATURES</span>
+                        <span>20 inputs</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--dp-muted);">TARGET</span>
+                        <span>time_taken_min</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--dp-muted);">TRAIN SPLIT</span>
+                        <span>80% (34,073)</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--dp-muted);">TEST SPLIT</span>
+                        <span>20% (8,519)</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Best Model -->
-            <div class="card shadow-sm p-4">
-                <h5 class="text-primary">🏆 Best Model</h5>
-                <ul class="list-unstyled small text-muted">
-                    <li><strong>Model:</strong> XGBoost</li>
-                    <li><strong>Tuning:</strong> RandomizedSearchCV</li>
-                    <li><strong>CV:</strong> 5-fold</li>
-                    <li><strong>Test RMSE:</strong> 3.7771 min</li>
-                    <li><strong>Test R²:</strong> 0.8393</li>
-                    <li><strong>Train-Test Gap:</strong> 0.0503</li>
-                </ul>
+            <div class="dp-ticket shadow-sm" style="border-left-color: var(--dp-low);">
+                <div class="dp-ticket-label"><i class="bi bi-trophy-fill"></i> Best Model</div>
+                <div class="dp-mono small" style="color: var(--dp-text); line-height: 1.9;">
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--dp-muted);">MODEL</span>
+                        <span>XGBoost</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--dp-muted);">TUNING</span>
+                        <span>RandomizedSearchCV</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--dp-muted);">CV</span>
+                        <span>5-fold</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--dp-muted);">TEST RMSE</span>
+                        <span>3.7771 min</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--dp-muted);">TEST R²</span>
+                        <span>0.8393</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span style="color: var(--dp-muted);">TRAIN-TEST GAP</span>
+                        <span>0.0503</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Deployment Architecture Diagram -->
+    <div class="card shadow-sm p-4 mt-4">
+        <h5 class="dp-section-title mb-4">
+            <i class="bi bi-diagram-3" style="color: var(--dp-accent);"></i>
+            Deployment Architecture
+        </h5>
+
+        <div class="row g-3 align-items-stretch justify-content-center text-center">
+
+            <!-- User -->
+            <div class="col-md-2">
+                <div class="dp-arch-node" style="border-top-color: #5B8DEF;">
+                    <div class="dp-arch-icon">👤</div>
+                    <div class="dp-arch-label">User</div>
+                    <div class="dp-arch-caption">Browser</div>
+                </div>
+            </div>
+
+            <!-- Connector -->
+            <div class="col-md-1 dp-arch-connector">
+                <div class="dp-arch-connector-label">HTTPS</div>
+                <div class="dp-arch-line"></div>
+            </div>
+
+            <!-- Flask -->
+            <div class="col-md-2">
+                <div class="dp-arch-node" style="border-top-color: var(--dp-accent);">
+                    <div class="dp-arch-icon">🌐</div>
+                    <div class="dp-arch-label">Flask</div>
+                    <div class="dp-arch-caption">Web Server · Render.com</div>
+                </div>
+            </div>
+
+            <!-- Connector -->
+            <div class="col-md-1 dp-arch-connector">
+                <div class="dp-arch-connector-label">Predict</div>
+                <div class="dp-arch-line"></div>
+            </div>
+
+            <!-- XGBoost -->
+            <div class="col-md-2">
+                <div class="dp-arch-node" style="border-top-color: var(--dp-low);">
+                    <div class="dp-arch-icon">🤖</div>
+                    <div class="dp-arch-label">XGBoost</div>
+                    <div class="dp-arch-caption">ML Model · .pkl</div>
+                </div>
+            </div>
+
+            <!-- Connector -->
+            <div class="col-md-1 dp-arch-connector">
+                <div class="dp-arch-connector-label">Chat</div>
+                <div class="dp-arch-line"></div>
+            </div>
+
+            <!-- Groq AI -->
+            <div class="col-md-2">
+                <div class="dp-arch-node" style="border-top-color: var(--dp-medium);">
+                    <div class="dp-arch-icon">💬</div>
+                    <div class="dp-arch-label">Groq AI</div>
+                    <div class="dp-arch-caption">Llama 3 · Assistant</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom row: supporting tools -->
+        <div class="row g-3 justify-content-center mt-3">
+            <div class="col-md-2">
+                <div class="dp-arch-node" style="border-top-color: #5B8DEF;">
+                    <div class="dp-arch-icon">🗺️</div>
+                    <div class="dp-arch-label">Leaflet.js</div>
+                    <div class="dp-arch-caption">Map &amp; Distance</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="dp-arch-node" style="border-top-color: var(--dp-accent);">
+                    <div class="dp-arch-icon">📊</div>
+                    <div class="dp-arch-label">Chart.js</div>
+                    <div class="dp-arch-caption">Visualisation</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="dp-arch-node" style="border-top-color: var(--dp-muted);">
+                    <div class="dp-arch-icon">🐙</div>
+                    <div class="dp-arch-label">GitHub</div>
+                    <div class="dp-arch-caption">Code Repository</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="dp-arch-node" style="border-top-color: #5B8DEF;">
+                    <div class="dp-arch-icon">☁️</div>
+                    <div class="dp-arch-label">Render.com</div>
+                    <div class="dp-arch-caption">Cloud Hosting</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="dp-arch-node" style="border-top-color: var(--dp-jam);">
+                    <div class="dp-arch-icon">📓</div>
+                    <div class="dp-arch-label">Jupyter</div>
+                    <div class="dp-arch-caption">ML Development</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flow description -->
+        <div class="dp-ticket mt-4">
+            <div class="dp-ticket-label"><i class="bi bi-signpost-2"></i> System Flow</div>
+            <ul class="dp-flow-list">
+                <li><span class="dp-flow-rank">01</span><span>User opens browser</span></li>
+                <li><span class="dp-flow-rank">02</span><span>Sends request via HTTPS to Flask on Render</span></li>
+                <li><span class="dp-flow-rank">03</span><span>Flask routes to prediction API</span></li>
+                <li><span class="dp-flow-rank">04</span><span>XGBoost model processes input and returns prediction</span></li>
+                <li><span class="dp-flow-rank">05</span><span>Result displayed to user</span></li>
+                <li><span class="dp-flow-rank">06</span><span>User can ask AI assistant via Groq Llama 3 API</span></li>
+                <li><span class="dp-flow-rank">07</span><span>User can calculate distance using Leaflet.js map</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Target Users -->
+    <div class="card shadow-sm p-4 mt-4">
+        <h5 class="dp-section-title mb-2">
+            <i class="bi bi-people" style="color: var(--dp-accent);"></i>
+            Target Users
+        </h5>
+        <p class="text-muted small mb-4">
+            This system is designed for stakeholders across the
+            food delivery ecosystem, each benefiting from
+            different features of the platform.
+        </p>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="dp-feature-card">
+                    <div class="dp-feature-icon"><i class="bi bi-bar-chart-line"></i></div>
+                    <h6 class="dp-section-title mb-1">Platform Operators</h6>
+                    <p class="small text-muted mb-0">
+                        Track delivery performance trends and
+                        identify common delay patterns using the
+                        Analytics Dashboard.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dp-feature-card">
+                    <div class="dp-feature-icon" style="background: rgba(62,207,142,0.12); color: var(--dp-low);">
+                        <i class="bi bi-gear"></i>
+                    </div>
+                    <h6 class="dp-section-title mb-1">Operations Team</h6>
+                    <p class="small text-muted mb-0">
+                        Use prediction results and dashboard
+                        insights to optimise delivery operations
+                        and resource allocation.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dp-feature-card">
+                    <div class="dp-feature-icon" style="background: rgba(91,141,239,0.12); color: #5B8DEF;">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <h6 class="dp-section-title mb-1">Customers</h6>
+                    <p class="small text-muted mb-0">
+                        View estimated delivery time before
+                        ordering, improving transparency and
+                        customer satisfaction.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dp-feature-card">
+                    <div class="dp-feature-icon" style="background: rgba(255,200,87,0.12); color: var(--dp-medium);">
+                        <i class="bi bi-bicycle"></i>
+                    </div>
+                    <h6 class="dp-section-title mb-1">Riders</h6>
+                    <p class="small text-muted mb-0">
+                        Use estimated delivery time as a guide
+                        for planning routes and managing
+                        multiple orders.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dp-feature-card">
+                    <div class="dp-feature-icon" style="background: rgba(255,92,92,0.12); color: var(--dp-jam);">
+                        <i class="bi bi-shop"></i>
+                    </div>
+                    <h6 class="dp-section-title mb-1">Restaurants</h6>
+                    <p class="small text-muted mb-0">
+                        Plan food preparation timing based on
+                        estimated delivery time, ensuring food
+                        quality upon arrival.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
-
-
-<!-- Deployment Architecture Diagram -->
-        <div class="col-12 mt-2">
-            <div class="card shadow-sm p-4">
-                <h5 class="text-primary mb-4">
-                    <i class="bi bi-diagram-3"></i>
-                    Deployment Architecture
-                </h5>
-                <div class="text-center">
-                    <div class="row g-3 align-items-center justify-content-center">
-
-                        <!-- User -->
-                        <div class="col-md-2">
-                            <div class="card p-3 bg-light text-center border-primary border-2">
-                                <div class="fs-2">👤</div>
-                                <div class="small fw-bold mt-1">User</div>
-                                <div class="small text-muted">Browser</div>
-                            </div>
-                        </div>
-
-                        <!-- Arrow -->
-                        <div class="col-md-1 text-center">
-                            <div class="fs-4 text-primary">→</div>
-                            <div class="small text-muted">HTTPS</div>
-                        </div>
-
-                        <!-- Flask -->
-                        <div class="col-md-2">
-                            <div class="card p-3 bg-primary text-white text-center">
-                                <div class="fs-2">🌐</div>
-                                <div class="small fw-bold mt-1">Flask</div>
-                                <div class="small">Web Server</div>
-                                <div class="small opacity-75">Render.com</div>
-                            </div>
-                        </div>
-
-                        <!-- Arrow -->
-                        <div class="col-md-1 text-center">
-                            <div class="fs-4 text-primary">→</div>
-                            <div class="small text-muted">Predict</div>
-                        </div>
-
-                        <!-- ML Model -->
-                        <div class="col-md-2">
-                            <div class="card p-3 bg-success text-white text-center">
-                                <div class="fs-2">🤖</div>
-                                <div class="small fw-bold mt-1">XGBoost</div>
-                                <div class="small">ML Model</div>
-                                <div class="small opacity-75">.pkl file</div>
-                            </div>
-                        </div>
-
-                        <!-- Arrow -->
-                        <div class="col-md-1 text-center">
-                            <div class="fs-4 text-primary">→</div>
-                            <div class="small text-muted">Chat</div>
-                        </div>
-
-                        <!-- Groq AI -->
-                        <div class="col-md-2">
-                            <div class="card p-3 bg-warning text-dark text-center">
-                                <div class="fs-2">💬</div>
-                                <div class="small fw-bold mt-1">Groq AI</div>
-                                <div class="small">Llama 3 API</div>
-                                <div class="small opacity-75">AI Assistant</div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- Bottom row -->
-                    <div class="row g-3 justify-content-center mt-2">
-                        <div class="col-md-2">
-                            <div class="card p-3 bg-info text-white text-center">
-                                <div class="fs-2">🗺️</div>
-                                <div class="small fw-bold mt-1">Leaflet.js</div>
-                                <div class="small">Map & Distance</div>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="card p-3 bg-secondary text-white text-center">
-                                <div class="fs-2">📊</div>
-                                <div class="small fw-bold mt-1">Chart.js</div>
-                                <div class="small">Visualisation</div>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="card p-3 bg-dark text-white text-center">
-                                <div class="fs-2">🐙</div>
-                                <div class="small fw-bold mt-1">GitHub</div>
-                                <div class="small">Code Repository</div>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="card p-3 text-white text-center"
-                                 style="background:#6f42c1;">
-                                <div class="fs-2">☁️</div>
-                                <div class="small fw-bold mt-1">Render.com</div>
-                                <div class="small">Cloud Hosting</div>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="card p-3 bg-danger text-white text-center">
-                                <div class="fs-2">📓</div>
-                                <div class="small fw-bold mt-1">Jupyter</div>
-                                <div class="small">ML Development</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Flow description -->
-                    <div class="mt-4 p-3 bg-light rounded text-start">
-                        <strong class="small">System Flow:</strong>
-                        <span class="small text-muted ms-2">
-                            User opens browser →
-                            Sends request via HTTPS to Flask on Render →
-                            Flask routes to prediction API →
-                            XGBoost model processes input and returns prediction →
-                            Result displayed to user →
-                            User can ask AI assistant via Groq Llama 3 API →
-                            User can calculate distance using Leaflet.js map
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-<!-- Target Users -->
-        <div class="col-12 mt-2">
-            <div class="card shadow-sm p-4">
-                <h5 class="text-primary mb-4">
-                    <i class="bi bi-people"></i>
-                    Target Users
-                </h5>
-                <p class="text-muted small mb-4">
-                    This system is designed for stakeholders across the
-                    food delivery ecosystem, each benefiting from
-                    different features of the platform.
-                </p>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="p-3 bg-primary bg-opacity-10 rounded h-100">
-                            <strong><i class="bi bi-bar-chart-line"></i> Platform Operators</strong>
-                            <p class="small text-muted mb-0 mt-1">
-                                Track delivery performance trends and
-                                identify common delay patterns using the
-                                Analytics Dashboard and Delay Trend
-                                Insights pages.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="p-3 bg-success bg-opacity-10 rounded h-100">
-                            <strong><i class="bi bi-gear"></i> Operations Team</strong>
-                            <p class="small text-muted mb-0 mt-1">
-                                Use prediction results and dashboard
-                                insights to optimise delivery operations
-                                and resource allocation.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="p-3 bg-info bg-opacity-10 rounded h-100">
-                            <strong><i class="bi bi-person"></i> Customers</strong>
-                            <p class="small text-muted mb-0 mt-1">
-                                View estimated delivery time before
-                                ordering, improving transparency and
-                                customer satisfaction.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="p-3 bg-warning bg-opacity-10 rounded h-100">
-                            <strong><i class="bi bi-bicycle"></i> Riders</strong>
-                            <p class="small text-muted mb-0 mt-1">
-                                Use estimated delivery time as a guide
-                                for planning routes and managing
-                                multiple orders.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="p-3 bg-danger bg-opacity-10 rounded h-100">
-                            <strong><i class="bi bi-shop"></i> Restaurants</strong>
-                            <p class="small text-muted mb-0 mt-1">
-                                Plan food preparation timing based on
-                                estimated delivery time, ensuring food
-                                quality upon arrival.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 {% endblock %}

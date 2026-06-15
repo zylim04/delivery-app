@@ -2,8 +2,34 @@
 {% block title %}Feature Importance{% endblock %}
 
 {% block content %}
+<style>
+.dp-finding-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+.dp-finding-list li {
+    display: flex;
+    gap: .6rem;
+    padding: .5rem 0;
+    border-bottom: 1px solid rgba(14,17,22,0.06);
+    font-size: .85rem;
+    color: #5a6472;
+}
+.dp-finding-list li:last-child { border-bottom: none; }
+.dp-finding-rank {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .7rem;
+    font-weight: 600;
+    color: var(--dp-accent);
+    flex-shrink: 0;
+    width: 1.4rem;
+}
+</style>
+
 <div class="container mt-4 mb-5">
-    <h3 class="mb-2">
+    <span class="dp-eyebrow-light">Model Explainability</span>
+    <h3 class="dp-section-title mb-2">
         <i class="bi bi-bar-chart"></i> Feature Importance & Explainability
     </h3>
     <p class="text-muted mb-4">
@@ -14,14 +40,13 @@
     </p>
 
     {% if use_shap %}
-    <div class="alert alert-info d-flex align-items-center mb-4">
-        <i class="bi bi-info-circle-fill fs-5 me-3"></i>
-        <div class="small">
-            <strong>What is SHAP?</strong>
+    <div class="dp-insight mb-4" style="border-left-color: #5B8DEF;">
+        <div class="dp-insight-title"><i class="bi bi-info-circle-fill"></i> What is SHAP?</div>
+        <p>
             SHAP values measure the average contribution of each feature
             to the model's prediction across all training samples.
             Higher SHAP value = stronger impact on delivery time prediction.
-        </div>
+        </p>
     </div>
     {% endif %}
 
@@ -29,51 +54,58 @@
     <div class="row g-4 mb-4">
         <div class="col-md-8">
             <div class="card shadow-sm p-4">
-                <h5 class="mb-1">
-                    <i class="bi bi-bar-chart text-primary"></i>
+                <h5 class="dp-section-title mb-1">
+                    <i class="bi bi-bar-chart" style="color: var(--dp-accent);"></i>
                     SHAP Feature Importance — XGBoost
                 </h5>
                 <p class="text-muted small mb-3">
                     Mean absolute SHAP values computed on 500 training samples.
                 </p>
-                <canvas id="featureChart" height="400"></canvas>
+                <div style="height: 400px;">
+                    <canvas id="featureChart"></canvas>
+                </div>
             </div>
         </div>
 
         <div class="col-md-4">
             <div class="card shadow-sm p-4 mb-4">
-                <h6 class="text-primary fw-bold mb-3">
-                    <i class="bi bi-search"></i> SHAP Key Findings
+                <h6 class="dp-section-title fw-bold mb-3">
+                    <i class="bi bi-search" style="color: var(--dp-accent);"></i> SHAP Key Findings
                 </h6>
-                <ul class="small text-muted">
-                    <li class="mb-2">
-                        <strong>road_traffic_density_Low</strong> — Low
+                <ul class="dp-finding-list">
+                    <li>
+                        <span class="dp-finding-rank">01</span>
+                        <span><strong>road_traffic_density_Low</strong> — Low
                         traffic strongly reduces delivery time, highest
-                        impact by SHAP magnitude.
+                        impact by SHAP magnitude.</span>
                     </li>
-                    <li class="mb-2">
-                        <strong>delivery_person_age</strong> — rider age
-                        significantly influences delivery speed.
+                    <li>
+                        <span class="dp-finding-rank">02</span>
+                        <span><strong>delivery_person_age</strong> — rider age
+                        significantly influences delivery speed.</span>
                     </li>
-                    <li class="mb-2">
-                        <strong>delivery_person_ratings</strong> — higher
-                        rated riders tend to deliver faster.
+                    <li>
+                        <span class="dp-finding-rank">03</span>
+                        <span><strong>delivery_person_ratings</strong> — higher
+                        rated riders tend to deliver faster.</span>
                     </li>
-                    <li class="mb-2">
-                        <strong>distance_km</strong> — longer distances
-                        directly increase delivery time.
+                    <li>
+                        <span class="dp-finding-rank">04</span>
+                        <span><strong>distance_km</strong> — longer distances
+                        directly increase delivery time.</span>
                     </li>
-                    <li class="mb-2">
-                        <strong>vehicle_condition</strong> — vehicle
-                        condition affects rider reliability.
+                    <li>
+                        <span class="dp-finding-rank">05</span>
+                        <span><strong>vehicle_condition</strong> — vehicle
+                        condition affects rider reliability.</span>
                     </li>
                 </ul>
             </div>
+                <div class="dp-feature-card h-auto">
+                    <div class="dp-feature-icon"><i class="bi bi-info-circle"></i></div>
+                    <span class="dp-spec">Game-theory based</span>
+                    <h6 class="dp-section-title">About SHAP</h6>
 
-            <div class="card shadow-sm p-4">
-                <h6 class="text-primary fw-bold mb-3">
-                    <i class="bi bi-info-circle"></i> About SHAP
-                </h6>
                 <p class="small text-muted mb-2">
                     SHAP (SHapley Additive exPlanations) is a
                     game-theory based method for explaining ML predictions.
@@ -96,71 +128,80 @@
     <div class="row g-4 mb-4">
         <div class="col-md-8">
             <div class="card shadow-sm p-4">
-                <h5 class="mb-1">
-                    <i class="bi bi-tree text-success"></i>
+                <h5 class="dp-section-title mb-1">
+                    <i class="bi bi-tree" style="color: var(--dp-low);"></i>
                     Random Forest Feature Importance
                 </h5>
                 <p class="text-muted small mb-3">
                     Gini impurity-based importance from Random Forest
                     (Tuned - RandomizedSearchCV).
                 </p>
-                <canvas id="rfChart" height="400"></canvas>
+                <div style="height: 400px;">
+                    <canvas id="rfChart"></canvas>
+                </div>
             </div>
         </div>
 
         <div class="col-md-4">
             <div class="card shadow-sm p-4 mb-4">
-                <h6 class="text-success fw-bold mb-3">
-                    <i class="bi bi-search"></i> RF Key Findings
+                <h6 class="dp-section-title fw-bold mb-3">
+                    <i class="bi bi-search" style="color: var(--dp-low);"></i> RF Key Findings
                 </h6>
-                <ul class="small text-muted">
-                    <li class="mb-2">
-                        <strong>delivery_person_ratings</strong> — ranked
+                <ul class="dp-finding-list">
+                    <li>
+                        <span class="dp-finding-rank">01</span>
+                        <span><strong>delivery_person_ratings</strong> — ranked
                         #1 by RF, confirming rider quality is the
-                        strongest predictor.
+                        strongest predictor.</span>
                     </li>
-                    <li class="mb-2">
-                        <strong>road_traffic_density_Low</strong> — low
+                    <li>
+                        <span class="dp-finding-rank">02</span>
+                        <span><strong>road_traffic_density_Low</strong> — low
                         traffic conditions strongly influence delivery
-                        time in both methods.
+                        time in both methods.</span>
                     </li>
-                    <li class="mb-2">
-                        <strong>distance_km</strong> — consistently
-                        ranked top 3 in both SHAP and RF.
+                    <li>
+                        <span class="dp-finding-rank">03</span>
+                        <span><strong>distance_km</strong> — consistently
+                        ranked top 3 in both SHAP and RF.</span>
                     </li>
-                    <li class="mb-2">
-                        <strong>delivery_person_age</strong> — ranked
+                    <li>
+                        <span class="dp-finding-rank">04</span>
+                        <span><strong>delivery_person_age</strong> — ranked
                         top 4 in both methods confirming rider
-                        demographics matter.
+                        demographics matter.</span>
                     </li>
-                    <li class="mb-2">
-                        <strong>multiple_deliveries</strong> — handling
-                        multiple orders simultaneously increases time.
+                    <li>
+                        <span class="dp-finding-rank">05</span>
+                        <span><strong>multiple_deliveries</strong> — handling
+                        multiple orders simultaneously increases time.</span>
                     </li>
                 </ul>
             </div>
 
             <div class="card shadow-sm p-4">
-                <h6 class="text-success fw-bold mb-3">
-                    <i class="bi bi-arrow-left-right"></i>
+                <h6 class="dp-section-title fw-bold mb-3">
+                    <i class="bi bi-arrow-left-right" style="color: var(--dp-low);"></i>
                     SHAP vs RF — Top 5 Comparison
                 </h6>
-                <table class="table table-sm small">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>#</th>
-                            <th>SHAP</th>
-                            <th>RF</th>
-                        </tr>
-                    </thead>
-                    <tbody id="comparison-tbody">
-                        <tr><td>1</td><td id="shap1">—</td><td id="rf1">—</td></tr>
-                        <tr><td>2</td><td id="shap2">—</td><td id="rf2">—</td></tr>
-                        <tr><td>3</td><td id="shap3">—</td><td id="rf3">—</td></tr>
-                        <tr><td>4</td><td id="shap4">—</td><td id="rf4">—</td></tr>
-                        <tr><td>5</td><td id="shap5">—</td><td id="rf5">—</td></tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive dp-console-table">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>SHAP</th>
+                                <th>RF</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparison-tbody">
+                            <tr><td>1</td><td id="shap1">—</td><td id="rf1">—</td></tr>
+                            <tr><td>2</td><td id="shap2">—</td><td id="rf2">—</td></tr>
+                            <tr><td>3</td><td id="shap3">—</td><td id="rf3">—</td></tr>
+                            <tr><td>4</td><td id="shap4">—</td><td id="rf4">—</td></tr>
+                            <tr><td>5</td><td id="shap5">—</td><td id="rf5">—</td></tr>
+                        </tbody>
+                    </table>
+                </div>
                 <p class="small text-muted mt-2 mb-0">
                     Agreement between both methods confirms
                     reliability of identified key factors.
@@ -172,14 +213,14 @@
 
     <!-- Combined Insight -->
     <div class="card shadow-sm p-4">
-        <h5><i class="bi bi-lightbulb text-warning"></i>
+        <h5 class="dp-section-title"><i class="bi bi-lightbulb" style="color: var(--dp-accent);"></i>
             Combined Interpretability Findings
         </h5>
         <div class="row g-3 mt-1">
             <div class="col-md-4">
-                <div class="p-3 bg-danger bg-opacity-10 rounded">
-                    <strong class="small">🚦 Traffic Conditions</strong>
-                    <p class="small text-muted mb-0 mt-1">
+                <div class="dp-insight" style="border-left-color: var(--dp-jam);">
+                    <div class="dp-insight-title">🚦 Traffic Conditions</div>
+                    <p>
                         Low traffic strongly reduces delivery time.
                         Both SHAP and RF rank traffic density among
                         the top features.
@@ -187,9 +228,9 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="p-3 bg-primary bg-opacity-10 rounded">
-                    <strong class="small">👤 Rider Characteristics</strong>
-                    <p class="small text-muted mb-0 mt-1">
+                <div class="dp-insight" style="border-left-color: #5B8DEF;">
+                    <div class="dp-insight-title">👤 Rider Characteristics</div>
+                    <p>
                         Rider ratings and age are consistently ranked
                         top features in both methods, showing rider
                         quality significantly impacts delivery time.
@@ -197,9 +238,9 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="p-3 bg-success bg-opacity-10 rounded">
-                    <strong class="small">📍 Distance</strong>
-                    <p class="small text-muted mb-0 mt-1">
+                <div class="dp-insight" style="border-left-color: var(--dp-low);">
+                    <div class="dp-insight-title">📍 Distance</div>
+                    <p>
                         Distance is ranked top 3–4 in both SHAP and RF,
                         confirming physical distance is a primary
                         driver of delivery duration.
@@ -218,6 +259,14 @@
 const shapData = {{ shap_data | safe }};
 const rfData   = {{ rf_data   | safe }};
 
+// Severity / rank palette — consistent across the app
+const sev = {
+    accent: '#FF6B4A',
+    blue  : '#5B8DEF',
+    low   : '#3ECF8E',
+    muted : '#7E8CA0'
+};
+
 // ── SHAP Chart ────────────────────────────────────────────────────
 new Chart(document.getElementById('featureChart').getContext('2d'), {
     type: 'bar',
@@ -227,9 +276,9 @@ new Chart(document.getElementById('featureChart').getContext('2d'), {
             label: 'Mean |SHAP Value|',
             data: shapData.values,
             backgroundColor: shapData.values.map((s, i) =>
-                i === 0 ? '#198754' :
-                i < 3   ? '#0d6efd' :
-                i < 8   ? '#6f42c1' : '#6c757d'
+                i === 0 ? sev.accent :
+                i < 3   ? sev.blue :
+                i < 8   ? sev.low : sev.muted
             ),
             borderRadius: 4
         }]
@@ -237,6 +286,7 @@ new Chart(document.getElementById('featureChart').getContext('2d'), {
     options: {
         indexAxis: 'y',
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
             legend: { display: false },
             tooltip: {
@@ -264,9 +314,9 @@ new Chart(document.getElementById('rfChart').getContext('2d'), {
             label: 'RF Importance Score',
             data: rfData.values,
             backgroundColor: rfData.values.map((s, i) =>
-                i === 0 ? '#198754' :
-                i < 3   ? '#20c997' :
-                i < 8   ? '#0d6efd' : '#6c757d'
+                i === 0 ? sev.accent :
+                i < 3   ? sev.low :
+                i < 8   ? sev.blue : sev.muted
             ),
             borderRadius: 4
         }]
@@ -274,6 +324,7 @@ new Chart(document.getElementById('rfChart').getContext('2d'), {
     options: {
         indexAxis: 'y',
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
             legend: { display: false },
             tooltip: {

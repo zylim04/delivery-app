@@ -2,16 +2,24 @@
 {% block title %}Predict — DeliveryPredict AI{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h3 class="mb-4"><i class="bi bi-stopwatch"></i> Predict Delivery Time</h3>
+<div class="container mt-4 mb-5">
+
+    <span class="dp-eyebrow-light">Live Inference</span>
+    <h3 class="dp-section-title mb-1"><i class="bi bi-stopwatch"></i> Predict Delivery Time</h3>
+    <p class="text-muted mb-4">
+        Enter the order's conditions and get an estimated delivery
+        time from the trained XGBoost model.
+    </p>
 
     <div class="row g-4">
 
         <!-- Input Form -->
         <div class="col-md-6">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <strong>📋 Enter Delivery Conditions</strong>
+                <div class="card-header" style="background: var(--dp-ink); color: var(--dp-text); border: none;">
+                    <span class="dp-section-title">
+                        <i class="bi bi-clipboard-data"></i> Delivery Conditions
+                    </span>
                 </div>
                 <div class="card-body">
 
@@ -128,7 +136,7 @@
                         <div class="col-md-6">
                             <label class="form-label">Peak Hour</label>
                             <div id="peak_hour_display"
-                                 class="form-control text-center fw-bold"
+                                 class="form-control text-center fw-bold dp-mono"
                                  style="background:#f0fff4;
                                         color:#198754;
                                         cursor:default;">
@@ -163,12 +171,12 @@
                     </div>
 
                     <div class="d-grid gap-2 mt-4">
-                        <button class="btn btn-primary btn-lg"
+                        <button class="btn btn-dp-primary btn-lg"
                                 onclick="predict()">
                             <i class="bi bi-lightning"></i>
                             Predict Delivery Time
                         </button>
-                        <button class="btn btn-outline-secondary"
+                        <button class="btn btn-dp-outline-dark"
                                 onclick="resetForm()">
                             Reset
                         </button>
@@ -181,59 +189,75 @@
         <!-- Result Panel -->
         <div class="col-md-6">
 
+            <!-- Placeholder -->
+            <div class="dp-ticket shadow-sm text-center py-5" id="placeholder-card">
+                <div class="dp-ticket-label">Awaiting input</div>
+                <div style="font-size:2rem;" class="mb-2">🛵</div>
+                <p class="dp-mono small mb-0" style="color: var(--dp-soft);">
+                    Fill in the delivery conditions and press<br>
+                    "Predict Delivery Time" to see the estimate.
+                </p>
+            </div>
+
             <!-- Loading -->
-            <div class="card shadow-sm text-center p-5" id="loading-card"
+            <div class="dp-ticket shadow-sm text-center py-5" id="loading-card"
                  style="display:none;">
-                <div class="spinner-border text-primary mx-auto"></div>
-                <p class="mt-3 text-muted">Predicting...</p>
+                <div class="spinner-border" style="color: var(--dp-accent);" role="status"></div>
+                <p class="mt-3 dp-mono text-uppercase small"
+                   style="color: var(--dp-soft); letter-spacing:.1em;">
+                    Running inference...
+                </p>
             </div>
 
             <!-- Result -->
-            <div class="card shadow-sm" id="result-card"
+            <div class="dp-ticket shadow-sm" id="result-card"
                  style="display:none;">
-                <div class="card-header text-white" id="result-header">
-                    <strong>📦 Prediction Result</strong>
+
+                <div class="dp-ticket-label">Prediction Result</div>
+
+                <div class="dp-ticket-eta">
+                    <span id="result-time">--</span><span class="dp-ticket-eta-unit">min</span>
                 </div>
-                <div class="card-body text-center py-5">
-                    <div class="display-1 fw-bold" id="result-time">--</div>
-                    <div class="lead text-muted">minutes</div>
-                    <div class="mt-3">
-                        <span class="badge fs-5 p-3" id="result-badge">--</span>
-                    </div>
-                    <hr>
-                    <div class="row mt-3 text-start">
-                        <div class="col-6">
-                            <small class="text-muted">Model</small>
-                            <div class="fw-bold">XGBoost</div>
-                        </div>
-                        <div class="col-6">
-                            <small class="text-muted">Model RMSE</small>
-                            <div class="fw-bold">±3.78 min</div>
-                        </div>
-                    </div>
 
-                    <hr>
-                    <div class="text-start">
-                        <small class="text-muted">
-                            <i class="bi bi-bar-chart-line"></i>
-                            Your Prediction vs Delay Trends
-                        </small>
-                        <canvas id="contextChart" height="180" class="mt-2"></canvas>
-                    </div>
+                <div class="mb-3">
+                    <span class="dp-chip" id="result-badge">--</span>
+                </div>
 
-                    <hr>
-                    <div class="d-grid gap-2 mt-2">
-                        <button class="btn btn-outline-primary btn-sm"
-                                onclick="explainWithAI()">
-                            <i class="bi bi-robot"></i>
-                            Explain Result with AI
-                        </button>
-                        <button class="btn btn-outline-secondary btn-sm"
-                                onclick="viewSimilarCases()">
-                            <i class="bi bi-table"></i>
-                            View Similar Past Cases
-                        </button>
+                <div id="warning-container"></div>
+
+                <div class="row dp-mono small mt-3" style="color: var(--dp-soft);">
+                    <div class="col-6">
+                        <div style="color: var(--dp-muted); font-size:.68rem; letter-spacing:.08em; text-transform:uppercase;">Model</div>
+                        <div>XGBoost</div>
                     </div>
+                    <div class="col-6">
+                        <div style="color: var(--dp-muted); font-size:.68rem; letter-spacing:.08em; text-transform:uppercase;">RMSE</div>
+                        <div>±3.78 min</div>
+                    </div>
+                </div>
+
+                <hr style="border-color: rgba(231,236,242,0.08); margin: 1.25rem 0;">
+
+                <div class="dp-ticket-label" style="margin-bottom: .75rem;">
+                    <i class="bi bi-bar-chart-line"></i> Prediction vs Delay Trends
+                </div>
+                <div style="height: 180px;">
+                    <canvas id="contextChart"></canvas>
+                </div>
+
+                <hr style="border-color: rgba(231,236,242,0.08); margin: 1.25rem 0;">
+
+                <div class="d-grid gap-2">
+                    <button class="btn btn-dp-primary btn-sm"
+                            onclick="explainWithAI()">
+                        <i class="bi bi-robot"></i>
+                        Explain Result with AI
+                    </button>
+                    <button class="btn btn-dp-outline btn-sm"
+                            onclick="viewSimilarCases()">
+                        <i class="bi bi-table"></i>
+                        View Similar Past Cases
+                    </button>
                 </div>
             </div>
 
@@ -245,8 +269,8 @@
 <div class="modal fade" id="similarModal" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title">
+            <div class="modal-header" style="background: var(--dp-ink); color: var(--dp-text); border: none;">
+                <h5 class="modal-title dp-section-title">
                     <i class="bi bi-table"></i>
                     Similar Past Delivery Cases
                 </h5>
@@ -354,10 +378,10 @@ window.addEventListener('load', function() {
 // ── Validate numeric inputs ────────────────────────────────────────
 function validateInputs() {
     const checks = [
-        { id: 'prep_time_min',           min: 0,   max: 30,  label: 'Preparation Time',    unit: 'min' },
-        { id: 'delivery_person_age',     min: 18,  max: 60,  label: 'Rider Age',    unit: 'years' },
-        { id: 'delivery_person_ratings', min: 2.5, max: 5.0, label: 'Rider Rating', unit: '' },
-        { id: 'distance_km',             min: 0.1, max: 100, label: 'Distance',     unit: 'km' }
+        { id: 'prep_time_min',           min: 0,   max: 30,  label: 'Preparation Time', unit: 'min' },
+        { id: 'delivery_person_age',     min: 18,  max: 60,  label: 'Rider Age',        unit: 'years' },
+        { id: 'delivery_person_ratings', min: 2.5, max: 5.0, label: 'Rider Rating',     unit: '' },
+        { id: 'distance_km',             min: 0.1, max: 100, label: 'Distance',         unit: 'km' }
     ];
 
     let allValid     = true;
@@ -369,7 +393,6 @@ function validateInputs() {
         const errorId = check.id + '-error';
         let errorEl   = document.getElementById(errorId);
 
-        // Create error element if it doesn't exist yet
         if (!errorEl) {
             errorEl    = document.createElement('div');
             errorEl.id = errorId;
@@ -397,40 +420,41 @@ function validateInputs() {
     return allValid;
 }
 
+// Map API status colors to ticket chip / border colors
+const statusMap = {
+    success: { chip: 'low',    border: '#3ECF8E' },
+    warning: { chip: 'medium', border: '#FFC857' },
+    danger:  { chip: 'jam',    border: '#FF5C5C' }
+};
+
 // ── Predict function ──────────────────────────────────────────────
 async function predict() {
-    const existingMsg = document.getElementById('warning-msg');
-    if (existingMsg) existingMsg.remove();
+    document.getElementById('warning-container').innerHTML = '';
 
-    // Validate all numeric inputs before proceeding
     if (!validateInputs()) {
         return;
     }
 
-    document.getElementById('result-time').style.fontSize = '';
-    document.getElementById('loading-card').style.display = 'block';
-    document.getElementById('result-card').style.display  = 'none';
+    document.getElementById('placeholder-card').style.display = 'none';
+    document.getElementById('result-card').style.display      = 'none';
+    document.getElementById('loading-card').style.display     = 'block';
 
     const distance = parseFloat(document.getElementById('distance_km').value);
     if (distance > 25) {
         document.getElementById('loading-card').style.display = 'none';
         document.getElementById('result-card').style.display  = 'block';
-        document.getElementById('result-header').innerHTML    = '<strong>⚠️ Warning</strong>';
-        document.getElementById('result-header').className    = 'card-header text-white bg-warning';
-        document.getElementById('result-time').textContent    = '⚠️';
-        document.getElementById('result-time').style.fontSize = '3rem';
-        document.getElementById('result-badge').textContent   = 'Distance Out of Range';
-        document.getElementById('result-badge').className     = 'badge fs-6 p-3 bg-warning text-dark';
+        document.getElementById('result-card').style.borderLeftColor = '#FFC857';
+        document.getElementById('result-time').textContent    = '—';
+        document.getElementById('result-badge').textContent   = 'Out of Range';
+        document.getElementById('result-badge').className     = 'dp-chip medium';
 
-        const msg     = document.createElement('div');
-        msg.id        = 'warning-msg';
-        msg.className = 'alert alert-warning mt-3 text-start small';
-        msg.innerHTML = '<strong>Distance ' + distance +
-                        ' km is outside the training range.</strong><br>' +
-                        '99% of training data is below 21 km. ' +
-                        'Predictions above 25 km may be unreliable.<br><br>' +
-                        'Please enter a distance between 1–25 km.';
-        document.querySelector('.card-body.text-center').appendChild(msg);
+        document.getElementById('warning-container').innerHTML =
+            '<div class="dp-mono small mb-3" style="color:#FFC857;">' +
+            '<i class="bi bi-exclamation-triangle-fill"></i> ' +
+            distance + ' km exceeds the training range. ' +
+            '99% of training data is below 21 km — predictions ' +
+            'above 25 km may be unreliable. Please enter a ' +
+            'distance between 1–25 km.</div>';
         return;
     }
 
@@ -476,33 +500,38 @@ async function predict() {
         document.getElementById('loading-card').style.display = 'none';
 
         if (result.success) {
-            document.getElementById('result-card').style.display  = 'block';
-            document.getElementById('result-time').textContent    = result.prediction;
-            document.getElementById('result-time').style.fontSize = '';
-            document.getElementById('result-badge').textContent   = result.icon + ' ' + result.status;
-            document.getElementById('result-badge').className     = `badge fs-5 p-3 bg-${result.color}`;
-            document.getElementById('result-header').className    = `card-header text-white bg-${result.color}`;
-            document.getElementById('result-header').innerHTML    = '<strong>📦 Prediction Result</strong>';
+            const status = statusMap[result.color] || statusMap.success;
 
-            // Load delay trend context chart
+            document.getElementById('result-card').style.display = 'block';
+            document.getElementById('result-card').style.borderLeftColor = status.border;
+            document.getElementById('result-time').textContent  = result.prediction;
+            document.getElementById('result-badge').textContent = result.icon + ' ' + result.status;
+            document.getElementById('result-badge').className   = 'dp-chip ' + status.chip;
+
             loadPredictionContext(result.prediction, payload);
         } else {
-            alert('Error: ' + result.error);
-            document.getElementById('loading-card').style.display = 'none';
+            document.getElementById('warning-container').innerHTML =
+                '<div class="dp-mono small" style="color:#FF5C5C;">Error: ' +
+                result.error + '</div>';
+            document.getElementById('result-card').style.display = 'block';
         }
 
     } catch (err) {
         document.getElementById('loading-card').style.display = 'none';
-        alert('Connection error: ' + err.message);
+        document.getElementById('warning-container').innerHTML =
+            '<div class="dp-mono small" style="color:#FF5C5C;">Connection error: ' +
+            err.message + '</div>';
+        document.getElementById('result-card').style.display = 'block';
     }
 }
 
 // ── Reset form ────────────────────────────────────────────────────
 function resetForm() {
-    document.getElementById('result-card').style.display  = 'none';
-    document.getElementById('loading-card').style.display = 'none';
-    const existingMsg = document.getElementById('warning-msg');
-    if (existingMsg) existingMsg.remove();
+    document.getElementById('result-card').style.display      = 'none';
+    document.getElementById('loading-card').style.display      = 'none';
+    document.getElementById('placeholder-card').style.display  = 'block';
+    document.getElementById('warning-container').innerHTML     = '';
+    document.getElementById('result-card').style.borderLeftColor = 'rgba(231,236,242,0.08)';
 }
 
 // ── Explain with AI ───────────────────────────────────────────────
@@ -510,7 +539,7 @@ function explainWithAI() {
     const time   = document.getElementById('result-time').textContent;
     const status = document.getElementById('result-badge').textContent;
 
-    if (time === '--') {
+    if (time === '--' || time === '—') {
         alert('Please run a prediction first.');
         return;
     }
@@ -539,7 +568,7 @@ function explainWithAI() {
 // ── View Similar Past Cases ───────────────────────────────────────
 async function viewSimilarCases() {
     const time = document.getElementById('result-time').textContent;
-    if (time === '--') {
+    if (time === '--' || time === '—') {
         alert('Please run a prediction first.');
         return;
     }
@@ -628,8 +657,8 @@ async function loadPredictionContext(predictedTime, payload) {
         const ctx     = result.context;
         const labels  = ['Your Prediction', ...ctx.labels];
         const values  = [parseFloat(predictedTime), ...ctx.values];
-        const colors  = ['#dc3545',
-                         '#0d6efd', '#0d6efd', '#0d6efd', '#0d6efd', '#0d6efd'];
+        const colors  = ['#FF6B4A',
+                         '#5B8DEF', '#5B8DEF', '#5B8DEF', '#5B8DEF', '#5B8DEF'];
 
         if (contextChartInstance) contextChartInstance.destroy();
 
@@ -647,6 +676,7 @@ async function loadPredictionContext(predictedTime, payload) {
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     indexAxis: 'y',
                     plugins: {
                         legend: { display: false },
@@ -658,7 +688,13 @@ async function loadPredictionContext(predictedTime, payload) {
                     },
                     scales: {
                         x: {
-                            title: { display: true, text: 'Minutes' }
+                            title: { display: true, text: 'Minutes', color: '#AEB9C9' },
+                            ticks: { color: '#AEB9C9' },
+                            grid: { color: 'rgba(231,236,242,0.08)' }
+                        },
+                        y: {
+                            ticks: { color: '#E7ECF2' },
+                            grid: { color: 'rgba(231,236,242,0.04)' }
                         }
                     }
                 }

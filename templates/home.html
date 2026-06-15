@@ -2,100 +2,369 @@
 {% block title %}Home — DeliveryPredict AI{% endblock %}
 
 {% block content %}
-<div class="hero text-center">
+<style>
+
+/* ── Hero ──────────────────────────────────────────────────────── */
+.dp-hero {
+    position: relative;
+    overflow: hidden;
+    background: #0E1116;
+    color: #E7ECF2;
+    padding: 4rem 0 3rem;
+    --dp-accent: #FF6B4A;
+    --dp-low: #3ECF8E;
+    --dp-medium: #FFC857;
+    --dp-jam: #FF5C5C;
+    --dp-muted: #7E8CA0;
+    --dp-soft: #AEB9C9;
+}
+.dp-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(231,236,242,0.06) 1px, transparent 1px);
+    background-size: 26px 26px;
+    pointer-events: none;
+}
+.dp-hero::after {
+    content: '';
+    position: absolute;
+    top: -140px; right: -120px;
+    width: 420px; height: 420px;
+    background: radial-gradient(circle, rgba(255,107,74,0.18), transparent 70%);
+    pointer-events: none;
+}
+.dp-hero .container { position: relative; z-index: 1; }
+
+.dp-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--dp-muted);
+    margin-bottom: 1rem;
+}
+.dp-headline {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(2rem, 4vw, 3.25rem);
+    line-height: 1.15;
+    margin-bottom: 1rem;
+}
+.dp-headline .accent { color: var(--dp-accent); }
+.dp-sub {
+    color: var(--dp-soft);
+    font-size: 1.05rem;
+    max-width: 38rem;
+    margin-bottom: 1.75rem;
+}
+
+.btn.btn-dp-primary {
+    background: var(--dp-accent);
+    border: 1px solid var(--dp-accent);
+    color: #0E1116;
+    font-weight: 600;
+}
+.btn.btn-dp-primary:hover { background: #ff7e5f; color: #0E1116; }
+.btn.btn-dp-outline {
+    background: transparent;
+    border: 1px solid rgba(231,236,242,0.22);
+    color: #E7ECF2;
+}
+.btn.btn-dp-outline:hover {
+    border-color: rgba(231,236,242,0.45);
+    color: #fff;
+}
+.btn.btn-dp-primary:focus, .btn.btn-dp-outline:focus {
+    box-shadow: 0 0 0 3px rgba(255,107,74,0.35);
+}
+
+/* ── ETA ticket ────────────────────────────────────────────────── */
+.dp-ticket {
+    background: #171C24;
+    border: 1px solid rgba(231,236,242,0.08);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+}
+.dp-ticket-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .68rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--dp-muted);
+    margin-bottom: 1.25rem;
+}
+.dp-ticket-route {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.1rem;
+}
+.dp-ticket-node {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+.dp-ticket-line {
+    flex: 1;
+    height: 0;
+    border-top: 2px dashed var(--dp-muted);
+    margin: 0 12px;
+    transition: border-color .3s ease;
+}
+.dp-ticket-line.low    { border-color: var(--dp-low); }
+.dp-ticket-line.medium { border-color: var(--dp-medium); }
+.dp-ticket-line.jam    { border-color: var(--dp-jam); }
+
+.dp-ticket-chip {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .3rem .7rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    transition: background .3s ease, color .3s ease, border-color .3s ease;
+}
+.dp-ticket-chip.low {
+    background: rgba(62,207,142,0.12); color: var(--dp-low);
+    border: 1px solid rgba(62,207,142,0.35);
+}
+.dp-ticket-chip.medium {
+    background: rgba(255,200,87,0.12); color: var(--dp-medium);
+    border: 1px solid rgba(255,200,87,0.35);
+}
+.dp-ticket-chip.jam {
+    background: rgba(255,92,92,0.12); color: var(--dp-jam);
+    border: 1px solid rgba(255,92,92,0.35);
+}
+
+.dp-ticket-eta {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 3rem;
+    line-height: 1;
+    margin-bottom: .35rem;
+    transition: opacity .25s ease;
+}
+.dp-ticket-eta-unit {
+    font-size: 1.1rem;
+    color: var(--dp-muted);
+    margin-left: .35rem;
+}
+.dp-ticket-conditions {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .82rem;
+    color: var(--dp-soft);
+    transition: opacity .25s ease;
+}
+.dp-ticket-fade { opacity: 0; }
+
+/* ── Stat strip ────────────────────────────────────────────────── */
+.dp-stats-strip {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(231,236,242,0.10);
+}
+.dp-stat-figure {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 1.6rem;
+    color: #E7ECF2;
+}
+.dp-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--dp-muted);
+    margin-top: .3rem;
+}
+
+/* ── Light sections ────────────────────────────────────────────── */
+.dp-eyebrow-light {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #FF6B4A;
+    font-weight: 600;
+    display: block;
+    margin-bottom: .4rem;
+}
+.dp-section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+}
+
+.dp-feature-card {
+    background: #fff;
+    border: 1px solid rgba(14,17,22,0.07);
+    border-radius: 14px;
+    padding: 1.75rem;
+    height: 100%;
+    transition: transform .15s ease, box-shadow .15s ease;
+    box-shadow: 0 1px 2px rgba(14,17,22,0.04);
+}
+.dp-feature-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(14,17,22,0.08);
+}
+.dp-feature-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: rgba(255,107,74,0.12);
+    color: #FF6B4A;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+.dp-spec {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .68rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #9aa5b5;
+    display: block;
+    margin-bottom: .4rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dp-ticket-eta, .dp-ticket-conditions, .dp-ticket-line, .dp-ticket-chip {
+        transition: none;
+    }
+}
+</style>
+
+<!-- ── Hero ──────────────────────────────────────────────────────── -->
+<section class="dp-hero">
     <div class="container">
-        <h1 class="display-4 fw-bold mb-3">
-            🚚 Delivery Time Predictor
-        </h1>
-        <p class="lead mb-4">
-            ML-powered delivery time prediction using XGBoost.<br>
-            Trained on 42,592 real delivery records.
+        <div class="row align-items-center gy-5">
+            <div class="col-lg-6">
+                <div class="dp-eyebrow">Zomato India · 42,592 deliveries · XGBoost</div>
+                <h1 class="dp-headline">
+                    Know when it's <span class="accent">actually</span> arriving.
+                </h1>
+                <p class="dp-sub">
+                    Enter the order's traffic, weather, distance and festival
+                    conditions and get a delivery time estimate, trained on
+                    42,592 real food deliveries across Indian cities.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/predict" class="btn btn-dp-primary btn-lg">
+                        Predict Delivery Time
+                    </a>
+                    <a href="/dashboard" class="btn btn-dp-outline btn-lg">
+                        View Dashboard
+                    </a>
+                    <a href="/chatbot" class="btn btn-dp-outline btn-lg">
+                        Ask AI Assistant
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="dp-ticket">
+                    <div class="dp-ticket-label">Live prediction preview</div>
+                    <div class="dp-ticket-route">
+                        <span class="dp-ticket-node">🏪</span>
+                        <span class="dp-ticket-line low" id="dpLine"></span>
+                        <span class="dp-ticket-node">🛵</span>
+                    </div>
+                    <div class="dp-ticket-chip low" id="dpChip">Low Traffic</div>
+                    <div class="dp-ticket-eta" id="dpEtaWrap">
+                        <span id="dpEta">18</span><span class="dp-ticket-eta-unit">min</span>
+                    </div>
+                    <div class="dp-ticket-conditions" id="dpConditions">
+                        Distance 3.2 km · Sunny
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row row-cols-2 row-cols-md-4 dp-stats-strip text-center text-md-start">
+            <div class="col">
+                <div class="dp-stat-figure">42,592</div>
+                <div class="dp-stat-label">Training Records</div>
+            </div>
+            <div class="col">
+                <div class="dp-stat-figure">0.8393</div>
+                <div class="dp-stat-label">Test R²</div>
+            </div>
+            <div class="col">
+                <div class="dp-stat-figure">±3.78</div>
+                <div class="dp-stat-label">RMSE (min)</div>
+            </div>
+            <div class="col">
+                <div class="dp-stat-figure">26.4</div>
+                <div class="dp-stat-label">Avg Delivery (min)</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Why this model ────────────────────────────────────────────── -->
+<div class="container mt-5 mb-5">
+    <span class="dp-eyebrow-light">Model overview</span>
+    <h2 class="dp-section-title h4 mb-4">Built on a leakage-free pipeline</h2>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="dp-feature-card">
+                <div class="dp-feature-icon"><i class="bi bi-cpu"></i></div>
+                <span class="dp-spec">XGBoost · RandomizedSearchCV</span>
+                <h5>Best Model</h5>
+                <p class="text-muted mb-0">
+                    XGBoost tuned with RandomizedSearchCV 
+                    and 5-fold cross-validation on 42,592 
+                    delivery records.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dp-feature-card">
+                <div class="dp-feature-icon"><i class="bi bi-shield-check"></i></div>
+                <span class="dp-spec">Train/test split · No leakage</span>
+                <h5>Leakage-Free Pipeline</h5>
+                <p class="text-muted mb-0">
+                    All preprocessing and feature selection 
+                    performed strictly on training data only.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dp-feature-card">
+                <div class="dp-feature-icon"><i class="bi bi-lightning"></i></div>
+                <span class="dp-spec">Instant result</span>
+                <h5>Real-Time Prediction</h5>
+                <p class="text-muted mb-0">
+                    Enter delivery conditions and get an 
+                    instant prediction in seconds.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Dataset overview ──────────────────────────────────────────── -->
+<div class="container mb-5">
+    <div class="card shadow-sm p-4">
+        <span class="dp-eyebrow-light">Exploratory data analysis</span>
+        <h2 class="dp-section-title h4 mb-1">Dataset overview</h2>
+        <p class="text-muted small mb-4">
+            A first look at the 42,592 deliveries used to train the model.
         </p>
-        <a href="/predict" class="btn btn-danger btn-lg me-2">
-            <i class="bi bi-stopwatch"></i> Predict Now
-        </a>
-        <a href="/dashboard" class="btn btn-outline-light btn-lg me-2">
-            <i class="bi bi-bar-chart-line"></i> View Dashboard
-        </a>
-        <a href="/chatbot" class="btn btn-outline-light btn-lg">
-            <i class="bi bi-robot"></i> Ask AI Assistant
-        </a>
-    </div>
-</div>
-
-<div class="container mt-5">
-    <div class="row g-4 text-center">
-        <div class="col-md-3">
-            <div class="card kpi-card p-4">
-                <div class="fs-1 fw-bold text-primary">42,592</div>
-                <div class="text-muted mt-1">Training Records</div>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <h6 class="text-muted mb-3">Delivery Time Distribution</h6>
+                <div style="height: 220px;">
+                    <canvas id="distChart"></canvas>
+                </div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card kpi-card p-4">
-                <div class="fs-1 fw-bold text-success">83.93%</div>
-                <div class="text-muted mt-1">Model Accuracy (R²)</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card kpi-card p-4">
-                <div class="fs-1 fw-bold text-warning">3.78</div>
-                <div class="text-muted mt-1">Test RMSE (minutes)</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card kpi-card p-4">
-                <div class="fs-1 fw-bold text-danger">26.4</div>
-                <div class="text-muted mt-1">Avg Delivery Time (min)</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="container mt-5 mb-5">
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card kpi-card p-4 h-100">
-                <h5><i class="bi bi-cpu text-primary"></i> Best Model</h5>
-                <p class="text-muted">XGBoost tuned with RandomizedSearchCV
-                and 5-fold cross-validation on 42,592 delivery records.</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card kpi-card p-4 h-100">
-                <h5><i class="bi bi-shield-check text-success"></i> Leakage-Free</h5>
-                <p class="text-muted">All preprocessing and feature selection
-                performed strictly on training data only.</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card kpi-card p-4 h-100">
-                <h5><i class="bi bi-lightning text-warning"></i> Real-Time</h5>
-                <p class="text-muted">Enter delivery conditions and get an
-                instant prediction in seconds.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Mini Charts Section -->
-<div class="container mt-5 mb-5">
-    <h5 class="mb-4 fw-bold">📊 Dataset Overview</h5>
-    <div class="row g-4">
-        <div class="col-md-6">
-            <div class="card kpi-card p-4">
-                <h6 class="text-muted mb-3">
-                    Delivery Time Distribution
-                </h6>
-                <canvas id="distChart" height="200"></canvas>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card kpi-card p-4">
-                <h6 class="text-muted mb-3">
-                    Avg Delivery Time by Traffic
-                </h6>
-                <canvas id="trafficChart" height="200"></canvas>
+            <div class="col-md-6">
+                <h6 class="text-muted mb-3">Avg Delivery Time by Traffic</h6>
+                <div style="height: 220px;">
+                    <canvas id="trafficChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -124,6 +393,7 @@ new Chart(document.getElementById('distChart'), {
     },
     options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
             y: { title: { display: true, text: 'Count' } },
@@ -147,6 +417,7 @@ new Chart(document.getElementById('trafficChart'), {
     },
     options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
             y: {
@@ -156,5 +427,47 @@ new Chart(document.getElementById('trafficChart'), {
         }
     }
 });
+
+// ── Live ETA ticket cycling ────────────────────────────────────────
+const dpScenarios = [
+    { chip: 'low',    label: 'Low Traffic',    eta: 18, conditions: 'Distance 3.2 km · Sunny' },
+    { chip: 'jam',    label: 'Jam Traffic',    eta: 42, conditions: 'Distance 11.8 km · Stormy' },
+    { chip: 'medium', label: 'Medium Traffic', eta: 35, conditions: 'Distance 7.5 km · Cloudy · Festival' }
+];
+
+const dpReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let dpIndex = 0;
+function dpRender(s) {
+    const chip  = document.getElementById('dpChip');
+    const line  = document.getElementById('dpLine');
+    const eta   = document.getElementById('dpEta');
+    const cond  = document.getElementById('dpConditions');
+
+    chip.className = 'dp-ticket-chip ' + s.chip;
+    chip.textContent = s.label;
+    line.className = 'dp-ticket-line ' + s.chip;
+    eta.textContent = s.eta;
+    cond.textContent = s.conditions;
+}
+
+dpRender(dpScenarios[0]);
+
+if (!dpReducedMotion) {
+    setInterval(() => {
+        dpIndex = (dpIndex + 1) % dpScenarios.length;
+        const etaWrap = document.getElementById('dpEtaWrap');
+        const cond    = document.getElementById('dpConditions');
+
+        etaWrap.classList.add('dp-ticket-fade');
+        cond.classList.add('dp-ticket-fade');
+
+        setTimeout(() => {
+            dpRender(dpScenarios[dpIndex]);
+            etaWrap.classList.remove('dp-ticket-fade');
+            cond.classList.remove('dp-ticket-fade');
+        }, 250);
+    }, 4000);
+}
 </script>
 {% endblock %}
