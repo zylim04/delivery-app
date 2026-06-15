@@ -122,6 +122,7 @@ def dataset():
                            missing_table=missing_table)
 
 
+
 @app.route('/dashboard')
 def dashboard():
     import pandas as pd
@@ -129,204 +130,121 @@ def dashboard():
 
     df = pd.read_csv(os.path.join(BASE, 'Zomato Dataset.csv'))
     df.columns = df.columns.str.strip()
-
-    # Avg delivery time by traffic density
-    traffic_avg = df.groupby('Road_traffic_density')['Time_taken (min)'].mean().round(1)
-    traffic_data = {
-        'labels': traffic_avg.index.tolist(),
-        'values': traffic_avg.values.tolist()
-    }
-
-    # Avg delivery time by weather
-    weather_avg = df.groupby('Weather_conditions')['Time_taken (min)'].mean().round(1)
-    weather_data = {
-        'labels': weather_avg.index.tolist(),
-        'values': weather_avg.values.tolist()
-    }
-
-    # Avg delivery time by city
-    city_avg = df.groupby('City')['Time_taken (min)'].mean().round(1)
-    city_data = {
-        'labels': city_avg.index.tolist(),
-        'values': city_avg.values.tolist()
-    }
-
-    # Avg delivery time by vehicle type
-    vehicle_avg = df.groupby('Type_of_vehicle')['Time_taken (min)'].mean().round(1)
-    vehicle_data = {
-        'labels': vehicle_avg.index.tolist(),
-        'values': vehicle_avg.values.tolist()
-    }
-
-    # Avg delivery time by festival
-    festival_avg = df.groupby('Festival')['Time_taken (min)'].mean().round(1)
-    festival_data = {
-        'labels': festival_avg.index.tolist(),
-        'values': festival_avg.values.tolist()
-    }
-
-    # Delivery count by traffic
-    traffic_count = df['Road_traffic_density'].value_counts()
-    traffic_count_data = {
-        'labels': traffic_count.index.tolist(),
-        'values': traffic_count.values.tolist()
-    }
-
-    # Summary stats
-    stats = {
-        'avg_time'     : round(df['Time_taken (min)'].mean(), 1),
-        'total'        : len(df),
-        'max_traffic'  : traffic_avg.idxmax(),
-        'worst_weather': weather_avg.idxmax()
-    }
-    
-    # Avg delivery time by order hour
-    df['order_hour'] = pd.to_datetime(
-        df['Time_Orderd'], errors='coerce'
-    ).dt.hour
-    hour_avg = df.groupby('order_hour')[
-        'Time_taken (min)'
-    ].mean().round(1).sort_index()
-    hour_data = {
-        'labels': [str(h) for h in hour_avg.index.tolist()],
-        'values': hour_avg.values.tolist()
-    }
-
-    # Avg delivery time by day of week
-    df['order_date'] = pd.to_datetime(
-        df['Order_Date'], dayfirst=True, errors='coerce'
-    )
-    df['day_of_week'] = df['order_date'].dt.day_name()
-    day_order = ['Monday','Tuesday','Wednesday',
-                 'Thursday','Friday','Saturday','Sunday']
-    day_avg = df.groupby('day_of_week')[
-        'Time_taken (min)'
-    ].mean().round(1).reindex(day_order)
-    day_data = {
-        'labels': day_avg.index.tolist(),
-        'values': day_avg.values.tolist()
-    }
-    
-    return render_template('dashboard.html',
-        traffic_data     = json.dumps(traffic_data),
-        weather_data     = json.dumps(weather_data),
-        city_data        = json.dumps(city_data),
-        vehicle_data     = json.dumps(vehicle_data),
-        festival_data    = json.dumps(festival_data),
-        traffic_count    = json.dumps(traffic_count_data),
-        hour_data        = json.dumps(hour_data),
-        day_data         = json.dumps(day_data),
-        stats            = stats
-    )
-
-
-@app.route('/trends')
-def trends():
-    import pandas as pd
-    import json
-
-    df = pd.read_csv(os.path.join(BASE, 'Zomato Dataset.csv'))
-    df.columns = df.columns.str.strip()
-
-    # Clean target column
-    df['Time_taken (min)'] = pd.to_numeric(
-        df['Time_taken (min)'], errors='coerce'
-    )
+    # Strip whitespace from categorical values (common Zomato dataset issue)
+    for col in ['Road_traffic_density', 'Weather_conditions', 'City',
+                'Festival', 'Type_of_order', 'Type_of_vehicle']:
+        if col in df.columns:
+            df[col] = df[col].astype(str).str.strip()
+            
     df = df.dropna(subset=['Time_taken (min)'])
 
+    avg_time = round(df['Time_taken (min)'].mean(), 1)
+    total    = len(df)
+
+    # Traffic
+    traffic_order = ['Low', 'Medium', 'High', 'Jam']
+    traffic_avg = (df.groupby('Road_traffic_density')['Time_taken (min)']
+                     .mean().round(1).reindex(traffic_order))
+    traffic_data = {'labels': traffic_avg.index.tolist(),
+                     'values': traffic_avg.values.tolist()}
+    jam_avg      = traffic_avg.get('Jam', 0)
+    low_avg      = traffic_avg.get('Low', 0)
+    traffic_diff = round(jam_avg - low_avg, 1)
+    max_traffic  = traffic_avg.idxmax()
+
+    # Weather
+    weather_avg = (df.groupby('Weather_conditions')['Time_taken (min)']
+                     .mean().round(1).sort_values(ascending=False))
+    weather_data  = {'labels': weather_avg.index.tolist(),
+                      'values': weather_avg.values.tolist()}
+    worst_weather = weather_avg.idxmax()
+
+    # City
+    city_avg  = df.groupby('City')['Time_taken (min)'].mean().round(1)
+    city_data = {'labels': city_avg.index.tolist(),
+                  'values': city_avg.values.tolist()}
+
+    # Festival
+    festival_avg = df.groupby('Festival')['Time_taken (min)'].mean().round(1)
+    nofest_avg = festival_avg.get('No', 0)
+    fest_avg   = festival_avg.get('Yes', 0)
+    fest_diff  = round(fest_avg - nofest_avg, 1)
+    festival_data = {'labels': ['Non-Festival', 'Festival'],
+                      'values': [nofest_avg, fest_avg]}
+
+    # Order hour
+    df['order_hour'] = pd.to_datetime(df['Time_Orderd'], errors='coerce').dt.hour
+    hour_avg = (df.groupby('order_hour')['Time_taken (min)']
+                  .mean().round(1).sort_index())
+    hour_data = {'labels': [f"{int(h):02d}:00" for h in hour_avg.index.tolist()],
+                  'values': hour_avg.values.tolist()}
+
+    # Day of week
+    df['order_date'] = pd.to_datetime(df['Order_Date'], dayfirst=True, errors='coerce')
+    df['day_of_week'] = df['order_date'].dt.day_name()
+    day_order = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+    day_avg = (df.groupby('day_of_week')['Time_taken (min)']
+                 .mean().round(1).reindex(day_order))
+    day_data = {'labels': day_avg.index.tolist(),
+                 'values': day_avg.fillna(0).values.tolist()}
+
+    # Multiple deliveries
+    multi_avg = (df.groupby('multiple_deliveries')['Time_taken (min)']
+                    .mean().round(1).sort_index())
+    multi_data = {'labels': [str(int(m)) for m in multi_avg.index.tolist()],
+                   'values': multi_avg.values.tolist()}
+
     # Delay classification
-    def classify(t):
-        if t <= 25:   return 'Normal'
-        elif t <= 35: return 'Slight Delay'
-        else:         return 'High Delay'
+    def classify_delay(t):
+        if t <= 25:
+            return 'Normal'
+        elif t <= 35:
+            return 'Slight Delay'
+        else:
+            return 'High Delay'
 
-    df['delay_class'] = df['Time_taken (min)'].apply(classify)
-
-    # 1. Delay classification distribution
-    delay_counts = df['delay_class'].value_counts()
-    delay_dist = {
-        'labels': delay_counts.index.tolist(),
-        'values': delay_counts.values.tolist()
-    }
-
-    # 2. Avg delivery time by traffic — sorted
-    traffic_avg = df.groupby('Road_traffic_density')[
-        'Time_taken (min)'
-    ].mean().round(1).sort_values(ascending=False)
-    traffic_data = {
-        'labels': traffic_avg.index.tolist(),
-        'values': traffic_avg.values.tolist()
-    }
-
-    # 3. Festival vs non-festival
-    festival_avg = df.groupby('Festival')[
-        'Time_taken (min)'
-    ].mean().round(1)
-    festival_data = {
-        'labels': festival_avg.index.tolist(),
-        'values': festival_avg.values.tolist()
-    }
-
-    # 4. Weather delay impact
-    weather_avg = df.groupby('Weather_conditions')[
-        'Time_taken (min)'
-    ].mean().round(1).sort_values(ascending=False)
-    weather_data = {
-        'labels': weather_avg.index.tolist(),
-        'values': weather_avg.values.tolist()
-    }
-
-    # 5. High delay rate by city
-    city_delay = df.groupby('City').apply(
-        lambda x: (x['delay_class'] == 'High Delay').mean() * 100
-    ).round(1).sort_values(ascending=False)
-    city_delay_data = {
-        'labels': city_delay.index.tolist(),
-        'values': city_delay.values.tolist()
-    }
-
-    # 6. Multiple deliveries impact
-    multi_avg = df.groupby('multiple_deliveries')[
-        'Time_taken (min)'
-    ].mean().round(1).sort_values()
-    multi_data = {
-        'labels': [str(int(x)) for x in multi_avg.index.tolist()],
-        'values': multi_avg.values.tolist()
-    }
-
-    # Key stats for insight cards
-    jam_avg    = round(df[df['Road_traffic_density'] == 'Jam'][
-        'Time_taken (min)'].mean(), 1)
-    low_avg    = round(df[df['Road_traffic_density'] == 'Low'][
-        'Time_taken (min)'].mean(), 1)
-    fest_avg   = round(df[df['Festival'] == 'Yes'][
-        'Time_taken (min)'].mean(), 1)
-    nofest_avg = round(df[df['Festival'] == 'No'][
-        'Time_taken (min)'].mean(), 1)
-    high_delay_pct = round(
-        (df['delay_class'] == 'High Delay').mean() * 100, 1
-    )
+    df['delay_class'] = df['Time_taken (min)'].apply(classify_delay)
+    delay_order  = ['Normal', 'Slight Delay', 'High Delay']
+    delay_counts = (df['delay_class'].value_counts()
+                      .reindex(delay_order).fillna(0))
+    delay_dist = {'labels': delay_order,
+                   'values': delay_counts.values.tolist()}
+    high_delay_pct = round((df['delay_class'] == 'High Delay').mean() * 100, 1)
 
     stats = {
-        'jam_avg'        : jam_avg,
-        'low_avg'        : low_avg,
-        'traffic_diff'   : round(jam_avg - low_avg, 1),
-        'fest_avg'       : fest_avg,
-        'nofest_avg'     : nofest_avg,
-        'fest_diff'      : round(fest_avg - nofest_avg, 1),
-        'high_delay_pct' : high_delay_pct
+        'avg_time'      : avg_time,
+        'total'         : f"{total:,}",
+        'max_traffic'   : max_traffic,
+        'worst_weather' : worst_weather,
+        'high_delay_pct': high_delay_pct,
+        'jam_avg'       : jam_avg,
+        'low_avg'       : low_avg,
+        'traffic_diff'  : traffic_diff,
+        'fest_avg'      : fest_avg,
+        'nofest_avg'    : nofest_avg,
+        'fest_diff'     : fest_diff
     }
 
-    return render_template('trends.html',
-        delay_dist   = json.dumps(delay_dist),
-        traffic_data = json.dumps(traffic_data),
-        festival_data= json.dumps(festival_data),
-        weather_data = json.dumps(weather_data),
-        city_delay   = json.dumps(city_delay_data),
-        multi_data   = json.dumps(multi_data),
-        stats        = stats
+    return render_template('dashboard.html',
+        traffic_data  = json.dumps(traffic_data),
+        weather_data  = json.dumps(weather_data),
+        city_data     = json.dumps(city_data),
+        festival_data = json.dumps(festival_data),
+        hour_data     = json.dumps(hour_data),
+        day_data      = json.dumps(day_data),
+        multi_data    = json.dumps(multi_data),
+        delay_dist    = json.dumps(delay_dist),
+        stats         = stats
     )
-    
+
+
+# Redirect old /trends links to the merged dashboard
+@app.route('/trends')
+def trends():
+    from flask import redirect, url_for
+    return redirect(url_for('dashboard'))
+
+
 @app.route('/map')
 def map_page():
     return render_template('map.html')
@@ -453,6 +371,57 @@ def submit_feedback():
         writer.writerow([timestamp, name, email, rating, message])
 
     return jsonify({'success': True, 'message': 'Thank you for your feedback!'})
+
+
+@app.route('/api/prediction-context', methods=['POST'])
+def prediction_context():
+    try:
+        import pandas as pd
+        data = request.get_json()
+
+        df = pd.read_csv(os.path.join(BASE, 'Zomato Dataset.csv'))
+        df.columns = df.columns.str.strip()
+        df = df.dropna(subset=['Time_taken (min)'])
+
+        traffic  = data.get('road_traffic_density', '')
+        weather  = data.get('weather_conditions', '')
+        city     = data.get('city', '')
+        festival = data.get('festival', '')
+
+        overall_avg = round(df['Time_taken (min)'].mean(), 1)
+
+        traffic_avg = round(
+            df[df['Road_traffic_density'] == traffic]['Time_taken (min)'].mean(), 1
+        )
+        weather_avg = round(
+            df[df['Weather_conditions'] == weather]['Time_taken (min)'].mean(), 1
+        )
+        city_avg = round(
+            df[df['City'] == city]['Time_taken (min)'].mean(), 1
+        )
+        festival_avg = round(
+            df[df['Festival'] == festival]['Time_taken (min)'].mean(), 1
+        )
+
+        return jsonify({
+            'success': True,
+            'context': {
+                'labels': [
+                    'Overall Avg',
+                    f'{traffic} Traffic',
+                    f'{weather} Weather',
+                    city,
+                    'Festival' if festival == 'Yes' else 'Non-Festival'
+                ],
+                'values': [
+                    overall_avg, traffic_avg, weather_avg,
+                    city_avg, festival_avg
+                ]
+            }
+        })
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
 
 # ── Prediction API ────────────────────────────────────────────────
 @app.route('/api/predict', methods=['POST'])

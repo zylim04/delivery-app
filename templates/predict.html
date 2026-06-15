@@ -77,7 +77,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Prep Time (min)</label>
+                            <label class="form-label">Preparation Time (min)</label>
                             <input type="number" class="form-control"
                                    id="prep_time_min" value="10" min="0" max="30">
                         </div>
@@ -86,7 +86,7 @@
                             <label class="form-label">Distance (km)</label>
                             <input type="number" class="form-control"
                                    id="distance_km" value="5.0"
-                                   step="0.1" min="0" max="25">
+                                   step="0.1" min="0.1" max="25">
                         </div>
 
                         <div class="col-md-6">
@@ -110,7 +110,6 @@
                                 <option value="22">22:00 (10 PM)</option>
                                 <option value="23">23:00 (11 PM)</option>
                             </select>
-                            <small class="text-muted">Delivery hours: 8am – 11pm</small>
                         </div>
 
                         <div class="col-md-6">
@@ -135,30 +134,30 @@
                                         cursor:default;">
                                 Off-Peak (12–16)
                             </div>
-                            <small class="text-muted">
-                                Auto-computed from order hour
-                            </small>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Multiple Deliveries</label>
-                            <input type="number" class="form-control"
-                                   id="multiple_deliveries" value="0"
-                                   min="0" max="3">
+                            <select class="form-select" id="multiple_deliveries">
+                                <option value="0" selected>0 — Single order</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Rider Age</label>
                             <input type="number" class="form-control"
                                    id="delivery_person_age" value="28"
-                                   min="18" max="60">
+                                   min="18" max="50">
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Rider Rating</label>
                             <input type="number" class="form-control"
                                    id="delivery_person_ratings" value="4.5"
-                                   step="0.1" min="1" max="5">
+                                   step="0.1" min="2.5" max="5.0">
                         </div>
 
                     </div>
@@ -212,6 +211,16 @@
                             <div class="fw-bold">±3.78 min</div>
                         </div>
                     </div>
+
+                    <hr>
+                    <div class="text-start">
+                        <small class="text-muted">
+                            <i class="bi bi-bar-chart-line"></i>
+                            Your Prediction vs Delay Trends
+                        </small>
+                        <canvas id="contextChart" height="180" class="mt-2"></canvas>
+                    </div>
+
                     <hr>
                     <div class="d-grid gap-2 mt-2">
                         <button class="btn btn-outline-primary btn-sm"
@@ -288,6 +297,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 
 // ── Update peak hour display ──────────────────────────────────────
@@ -341,10 +351,61 @@ window.addEventListener('load', function() {
     updatePeakHour(startHour);
 });
 
+// ── Validate numeric inputs ────────────────────────────────────────
+function validateInputs() {
+    const checks = [
+        { id: 'prep_time_min',           min: 0,   max: 30,  label: 'Preparation Time',    unit: 'min' },
+        { id: 'delivery_person_age',     min: 18,  max: 60,  label: 'Rider Age',    unit: 'years' },
+        { id: 'delivery_person_ratings', min: 2.5, max: 5.0, label: 'Rider Rating', unit: '' },
+        { id: 'distance_km',             min: 0.1, max: 100, label: 'Distance',     unit: 'km' }
+    ];
+
+    let allValid     = true;
+    let firstInvalid = null;
+
+    for (const check of checks) {
+        const field   = document.getElementById(check.id);
+        const value   = parseFloat(field.value);
+        const errorId = check.id + '-error';
+        let errorEl   = document.getElementById(errorId);
+
+        // Create error element if it doesn't exist yet
+        if (!errorEl) {
+            errorEl    = document.createElement('div');
+            errorEl.id = errorId;
+            errorEl.className = 'invalid-feedback';
+            field.parentNode.appendChild(errorEl);
+        }
+
+        if (isNaN(value) || value < check.min || value > check.max) {
+            field.classList.add('is-invalid');
+            errorEl.textContent =
+                check.label + ' must be between ' + check.min +
+                ' and ' + check.max +
+                (check.unit ? ' ' + check.unit : '') + '.';
+            errorEl.style.display = 'block';
+
+            if (!firstInvalid) firstInvalid = field;
+            allValid = false;
+        } else {
+            field.classList.remove('is-invalid');
+            errorEl.style.display = 'none';
+        }
+    }
+
+    if (firstInvalid) firstInvalid.focus();
+    return allValid;
+}
+
 // ── Predict function ──────────────────────────────────────────────
 async function predict() {
     const existingMsg = document.getElementById('warning-msg');
     if (existingMsg) existingMsg.remove();
+
+    // Validate all numeric inputs before proceeding
+    if (!validateInputs()) {
+        return;
+    }
 
     document.getElementById('result-time').style.fontSize = '';
     document.getElementById('loading-card').style.display = 'block';
@@ -422,6 +483,9 @@ async function predict() {
             document.getElementById('result-badge').className     = `badge fs-5 p-3 bg-${result.color}`;
             document.getElementById('result-header').className    = `card-header text-white bg-${result.color}`;
             document.getElementById('result-header').innerHTML    = '<strong>📦 Prediction Result</strong>';
+
+            // Load delay trend context chart
+            loadPredictionContext(result.prediction, payload);
         } else {
             alert('Error: ' + result.error);
             document.getElementById('loading-card').style.display = 'none';
@@ -544,6 +608,65 @@ async function viewSimilarCases() {
             '<tr><td colspan="9" class="text-center text-danger">' +
             'Connection error. Please try again.</td></tr>';
         document.getElementById('similar-table').style.display = 'block';
+    }
+}
+
+// ── Load Prediction Context Chart ─────────────────────────────────
+let contextChartInstance = null;
+
+async function loadPredictionContext(predictedTime, payload) {
+    try {
+        const res    = await fetch('/api/prediction-context', {
+            method : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body   : JSON.stringify(payload)
+        });
+        const result = await res.json();
+
+        if (!result.success) return;
+
+        const ctx     = result.context;
+        const labels  = ['Your Prediction', ...ctx.labels];
+        const values  = [parseFloat(predictedTime), ...ctx.values];
+        const colors  = ['#dc3545',
+                         '#0d6efd', '#0d6efd', '#0d6efd', '#0d6efd', '#0d6efd'];
+
+        if (contextChartInstance) contextChartInstance.destroy();
+
+        contextChartInstance = new Chart(
+            document.getElementById('contextChart').getContext('2d'),
+            {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: c => c.raw + ' min'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Minutes' }
+                        }
+                    }
+                }
+            }
+        );
+
+    } catch (err) {
+        console.log('Context chart error:', err);
     }
 }
 

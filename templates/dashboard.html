@@ -5,7 +5,8 @@
 <div class="container mt-4 mb-5">
     <h3 class="mb-2"><i class="bi bi-bar-chart-line"></i> Analytics Dashboard</h3>
     <p class="text-muted mb-4">
-        Operational insights based on 45,584 delivery records.
+        Operational insights and delay trend analysis based on
+        {{ stats.total }} delivery records.
     </p>
 
     <!-- KPI Summary Row -->
@@ -24,14 +25,14 @@
         </div>
         <div class="col-md-3">
             <div class="card kpi-card p-3 text-center">
-                <div class="fs-3 fw-bold text-danger">{{ stats.max_traffic }}</div>
-                <div class="text-muted small">Highest Delay Traffic</div>
+                <div class="fs-3 fw-bold text-danger">{{ stats.high_delay_pct }}%</div>
+                <div class="text-muted small">High Delay Rate (&gt;35 min)</div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card kpi-card p-3 text-center">
-                <div class="fs-3 fw-bold text-warning">{{ stats.worst_weather }}</div>
-                <div class="text-muted small">Highest Delay Weather</div>
+                <div class="fs-3 fw-bold text-warning">{{ stats.max_traffic }}</div>
+                <div class="text-muted small">Highest Delay Traffic</div>
             </div>
         </div>
     </div>
@@ -95,113 +96,137 @@
         </div>
     </div>
 
-    <!-- Row 1: Traffic + Weather -->
+<!-- Row 1: Delay Distribution + Traffic -->
     <div class="row g-4 mb-4">
         <div class="col-md-6">
-            <div class="card shadow-sm p-4">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-pie-chart text-primary"></i>
+                    Delay Classification Distribution
+                </h6>
+                <div style="height: 220px;">
+                    <canvas id="delayDistChart"></canvas>
+                </div>
+                <div class="mt-3">
+                    <span class="badge bg-success me-1">Normal ≤ 25 min</span>
+                    <span class="badge bg-warning text-dark me-1">
+                        Slight Delay 26–35 min
+                    </span>
+                    <span class="badge bg-danger">High Delay &gt; 35 min</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
                 <h6 class="fw-bold mb-3">
                     <i class="bi bi-car-front text-danger"></i>
                     Avg Delivery Time by Traffic Density
                 </h6>
-                <canvas id="trafficChart" height="220"></canvas>
+                <div style="height: 220px;">
+                    <canvas id="trafficChart"></canvas>
+                </div>
                 <p class="text-muted small mt-2">
-                    Jam traffic results in the longest delivery times.
+                    Jam traffic increases delivery time by
+                    {{ stats.traffic_diff }} min vs Low traffic.
                 </p>
             </div>
         </div>
+    </div>
+
+<!-- Row 2: Weather + Festival -->
+    <div class="row g-4 mb-4">
         <div class="col-md-6">
-            <div class="card shadow-sm p-4">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
                 <h6 class="fw-bold mb-3">
                     <i class="bi bi-cloud-rain text-primary"></i>
                     Avg Delivery Time by Weather Condition
                 </h6>
-                <canvas id="weatherChart" height="220"></canvas>
+                <div style="height: 220px;">
+                    <canvas id="weatherChart"></canvas>
+                </div>
                 <p class="text-muted small mt-2">
-                    Stormy and foggy conditions increase delivery time.
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Row 2: City + Vehicle -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm p-4">
-                <h6 class="fw-bold mb-3">
-                    <i class="bi bi-buildings text-success"></i>
-                    Avg Delivery Time by City
-                </h6>
-                <canvas id="cityChart" height="220"></canvas>
-                <p class="text-muted small mt-2">
-                    Urban and metropolitan areas show longer delivery times.
+                    {{ stats.worst_weather }} conditions cause the
+                    highest delivery delays.
                 </p>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card shadow-sm p-4">
-                <h6 class="fw-bold mb-3">
-                    <i class="bi bi-bicycle text-warning"></i>
-                    Avg Delivery Time by Vehicle Type
-                </h6>
-                <canvas id="vehicleChart" height="220"></canvas>
-                <p class="text-muted small mt-2">
-                    Bicycles tend to take longer compared to motorcycles.
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Row 3: Festival + Traffic Count -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-6">
-            <div class="card shadow-sm p-4">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
                 <h6 class="fw-bold mb-3">
                     <i class="bi bi-calendar-event text-info"></i>
                     Avg Delivery Time — Festival vs Non-Festival
                 </h6>
-                <canvas id="festivalChart" height="220"></canvas>
+                <div style="height: 220px;">
+                    <canvas id="festivalChart"></canvas>
+                </div>
                 <p class="text-muted small mt-2">
-                    Festival periods show higher average delivery times
-                    due to increased demand.
-                </p>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm p-4">
-                <h6 class="fw-bold mb-3">
-                    <i class="bi bi-pie-chart text-secondary"></i>
-                    Delivery Count by Traffic Density
-                </h6>
-                <canvas id="trafficCountChart" height="220"></canvas>
-                <p class="text-muted small mt-2">
-                    Distribution of deliveries across different
-                    traffic conditions.
+                    Festival periods add {{ stats.fest_diff }} min
+                    on average.
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- Row 4: Hour + Day of Week -->
+   <!-- Row 3: City + Multiple Deliveries -->
     <div class="row g-4 mb-4">
         <div class="col-md-6">
-            <div class="card shadow-sm p-4">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
                 <h6 class="fw-bold mb-3">
-                    <i class="bi bi-clock text-primary"></i>
-                    Avg Delivery Time by Order Hour
+                    <i class="bi bi-buildings text-success"></i>
+                    Avg Delivery Time by City
                 </h6>
-                <canvas id="hourChart" height="220"></canvas>
+                <div style="height: 220px;">
+                    <canvas id="cityChart"></canvas>
+                </div>
                 <p class="text-muted small mt-2">
-                    Evening peak hours (17–23) show longer delivery times.
+                    Urban and metropolitan areas show longer
+                    delivery times.
                 </p>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card shadow-sm p-4">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-boxes text-secondary"></i>
+                    Impact of Multiple Deliveries
+                </h6>
+                <div style="height: 220px;">
+                    <canvas id="multiChart"></canvas>
+                </div>
+                <p class="text-muted small mt-2">
+                    Riders handling more simultaneous deliveries
+                    take longer per delivery.
+                </p>
+            </div>
+        </div>
+    </div>
+
+   <!-- Row 4: Hour + Day -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
+                <h6 class="fw-bold mb-3">
+                    <i class="bi bi-clock text-primary"></i>
+                    Avg Delivery Time by Order Hour
+                </h6>
+                <div style="height: 220px;">
+                    <canvas id="hourChart"></canvas>
+                </div>
+                <p class="text-muted small mt-2">
+                    Evening peak hours (17–23) show longer
+                    delivery times.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
                 <h6 class="fw-bold mb-3">
                     <i class="bi bi-calendar3 text-success"></i>
                     Avg Delivery Time by Day of Week
                 </h6>
-                <canvas id="dayChart" height="220"></canvas>
+                <div style="height: 220px;">
+                    <canvas id="dayChart"></canvas>
+                </div>
                 <p class="text-muted small mt-2">
                     Weekends tend to have higher delivery times
                     due to increased demand.
@@ -214,30 +239,42 @@
     <div class="card shadow-sm p-4">
         <h5><i class="bi bi-lightbulb text-warning"></i> Key Insights</h5>
         <div class="row g-3 mt-1">
-            <div class="col-md-4">
-                <div class="p-3 bg-danger bg-opacity-10 rounded">
+            <div class="col-md-3">
+                <div class="p-3 bg-danger bg-opacity-10 rounded h-100">
                     <strong>🚦 Traffic Impact</strong>
                     <p class="small text-muted mb-0 mt-1">
-                        Jam traffic increases average delivery time
-                        significantly compared to low traffic conditions.
+                        Jam traffic increases average delivery time by
+                        {{ stats.traffic_diff }} min compared to Low
+                        traffic ({{ stats.jam_avg }} vs
+                        {{ stats.low_avg }} min).
                     </p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="p-3 bg-warning bg-opacity-10 rounded">
+            <div class="col-md-3">
+                <div class="p-3 bg-warning bg-opacity-10 rounded h-100">
                     <strong>🌧 Weather Impact</strong>
                     <p class="small text-muted mb-0 mt-1">
-                        Stormy and sandstorm conditions cause the
-                        most delay in delivery operations.
+                        {{ stats.worst_weather }} conditions cause the
+                        most delivery delays among all weather types.
                     </p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="p-3 bg-info bg-opacity-10 rounded">
+            <div class="col-md-3">
+                <div class="p-3 bg-info bg-opacity-10 rounded h-100">
                     <strong>🎉 Festival Impact</strong>
                     <p class="small text-muted mb-0 mt-1">
-                        Festival periods result in longer delivery times
-                        due to higher order volumes and road congestion.
+                        Festival periods add {{ stats.fest_diff }} min
+                        on average ({{ stats.fest_avg }} vs
+                        {{ stats.nofest_avg }} min).
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 bg-secondary bg-opacity-10 rounded h-100">
+                    <strong>📊 Overall Delay Rate</strong>
+                    <p class="small text-muted mb-0 mt-1">
+                        {{ stats.high_delay_pct }}% of all deliveries
+                        exceed 35 minutes, classified as High Delay.
                     </p>
                 </div>
             </div>
@@ -250,23 +287,20 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Load data from Flask
-const trafficData      = {{ traffic_data | safe }};
-const weatherData      = {{ weather_data | safe }};
-const cityData         = {{ city_data | safe }};
-const vehicleData      = {{ vehicle_data | safe }};
-const festivalData     = {{ festival_data | safe }};
-const trafficCountData = {{ traffic_count | safe }};
-const hourData         = {{ hour_data | safe }};
-const dayData          = {{ day_data | safe }};
+const trafficData  = {{ traffic_data  | safe }};
+const weatherData  = {{ weather_data  | safe }};
+const cityData     = {{ city_data     | safe }};
+const festivalData = {{ festival_data | safe }};
+const hourData     = {{ hour_data     | safe }};
+const dayData      = {{ day_data      | safe }};
+const multiData    = {{ multi_data    | safe }};
+const delayDist    = {{ delay_dist    | safe }};
 
-const barColors = ['#0d6efd','#198754','#ffc107','#dc3545','#6f42c1','#0dcaf0'];
-const pieColors = ['#0d6efd','#198754','#ffc107','#dc3545'];
+const barColors    = ['#0d6efd','#198754','#ffc107','#dc3545','#6f42c1','#0dcaf0'];
+const doughColors  = ['#198754','#ffc107','#dc3545'];
 
-// Store all chart instances
 const charts = {};
 
-// ── Bar chart creator with destroy/recreate ───────────────────────
 function makeBar(id, data, customColors) {
     if (charts[id]) charts[id].destroy();
     charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
@@ -281,10 +315,11 @@ function makeBar(id, data, customColors) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
                 y: {
-                    beginAtZero: false,
+                    beginAtZero: true,
                     title: { display: true, text: 'Avg Time (min)' }
                 }
             }
@@ -292,8 +327,7 @@ function makeBar(id, data, customColors) {
     });
 }
 
-// ── Doughnut chart ────────────────────────────────────────────────
-function makePie(id, data) {
+function makeDoughnut(id, data) {
     if (charts[id]) charts[id].destroy();
     charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
         type: 'doughnut',
@@ -301,24 +335,27 @@ function makePie(id, data) {
             labels: data.labels,
             datasets: [{
                 data: data.values,
-                backgroundColor: pieColors,
+                backgroundColor: doughColors,
                 borderWidth: 2
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: { legend: { position: 'bottom' } }
         }
     });
 }
 
-// ── Initial render ────────────────────────────────────────────────
-makeBar('trafficChart',      trafficData);
-makeBar('weatherChart',      weatherData);
-makeBar('cityChart',         cityData);
-makeBar('vehicleChart',      vehicleData);
-makeBar('festivalChart',     festivalData);
-makePie('trafficCountChart', trafficCountData);
+// ── Initial render ──────────────────────────────────────────────
+makeDoughnut('delayDistChart', delayDist);
+makeBar('trafficChart',  trafficData);
+makeBar('weatherChart',  weatherData);
+makeBar('festivalChart', festivalData);
+makeBar('cityChart',     cityData);
+
+makeBar('multiChart', multiData,
+    ['#198754','#ffc107','#fd7e14','#dc3545','#dc3545']);
 
 const hourColors = hourData.labels.map(h => {
     const n = parseInt(h);
@@ -345,20 +382,23 @@ function filterData(originalData, value) {
 }
 
 function applyFilters() {
-    const city    = document.getElementById('filterCity').value;
-    const traffic = document.getElementById('filterTraffic').value;
-    const weather = document.getElementById('filterWeather').value;
-    const festival= document.getElementById('filterFestival').value;
+    const city     = document.getElementById('filterCity').value;
+    const traffic  = document.getElementById('filterTraffic').value;
+    const weather  = document.getElementById('filterWeather').value;
+    const festival = document.getElementById('filterFestival').value;
+
+    const festLabel = festival === 'Yes' ? 'Festival' :
+                       festival === 'No'  ? 'Non-Festival' : 'all';
 
     makeBar('trafficChart',  filterData(trafficData,  traffic));
     makeBar('weatherChart',  filterData(weatherData,  weather));
     makeBar('cityChart',     filterData(cityData,      city));
-    makeBar('festivalChart', filterData(festivalData,  festival));
+    makeBar('festivalChart', filterData(festivalData,  festLabel));
 
     const isFiltered = city !== 'all' || traffic !== 'all' ||
                        weather !== 'all' || festival !== 'all';
     document.getElementById('filterCount').textContent =
-        isFiltered ? 'Filtered' : '45,584 rows';
+        isFiltered ? 'Filtered' : '{{ stats.total }} rows';
 }
 
 function resetFilters() {

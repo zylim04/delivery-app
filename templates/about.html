@@ -36,30 +36,24 @@
                 </ol>
             </div>
 
-            <!-- Methodology -->
+<!-- Methodology -->
             <div class="card shadow-sm p-4 mb-4">
                 <h5 class="text-primary">🔬 Methodology</h5>
-                <div class="row g-3 text-center">
-                    <div class="col-md-2">
-                        <div class="badge bg-primary p-2 w-100">EDA</div>
-                    </div>
-                    <div class="col-md-1 d-flex align-items-center
-                                justify-content-center text-muted">→</div>
-                    <div class="col-md-2">
-                        <div class="badge bg-primary p-2 w-100">Cleaning</div>
-                    </div>
-                    <div class="col-md-1 d-flex align-items-center
-                                justify-content-center text-muted">→</div>
-                    <div class="col-md-2">
-                        <div class="badge bg-primary p-2 w-100">Feature Engineering.</div>
-                    </div>
-                    <div class="col-md-1 d-flex align-items-center
-                                justify-content-center text-muted">→</div>
-                    <div class="col-md-2">
-                        <div class="badge bg-primary p-2 w-100">Modelling</div>
-                    </div>
+                <div class="d-flex flex-wrap align-items-center
+                            justify-content-center gap-2 mt-3">
+                    <span class="badge bg-primary px-3 py-2 fs-6">EDA</span>
+                    <span class="text-muted">→</span>
+                    <span class="badge bg-primary px-3 py-2 fs-6">Cleaning</span>
+                    <span class="text-muted">→</span>
+                    <span class="badge bg-primary px-3 py-2 fs-6">Feature Engineering</span>
+                    <span class="text-muted">→</span>
+                    <span class="badge bg-primary px-3 py-2 fs-6">Modelling</span>
+                    <span class="text-muted">→</span>
+                    <span class="badge bg-primary px-3 py-2 fs-6">Evaluation</span>
+                    <span class="text-muted">→</span>
+                    <span class="badge bg-success px-3 py-2 fs-6">Deployment</span>
                 </div>
-                <p class="text-muted small mt-3">
+                <p class="text-muted small mt-3 text-center">
                     The pipeline follows CRISP-DM methodology with strict
                     separation of training and test data to prevent
                     data leakage.
@@ -125,6 +119,8 @@
         </div>
     </div>
 </div>
+
+
 <!-- Deployment Architecture Diagram -->
         <div class="col-12 mt-2">
             <div class="card shadow-sm p-4">
@@ -246,6 +242,74 @@
                             User can ask AI assistant via Groq Llama 3 API →
                             User can calculate distance using Leaflet.js map
                         </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!-- Target Users -->
+        <div class="col-12 mt-2">
+            <div class="card shadow-sm p-4">
+                <h5 class="text-primary mb-4">
+                    <i class="bi bi-people"></i>
+                    Target Users
+                </h5>
+                <p class="text-muted small mb-4">
+                    This system is designed for stakeholders across the
+                    food delivery ecosystem, each benefiting from
+                    different features of the platform.
+                </p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-primary bg-opacity-10 rounded h-100">
+                            <strong><i class="bi bi-bar-chart-line"></i> Platform Operators</strong>
+                            <p class="small text-muted mb-0 mt-1">
+                                Track delivery performance trends and
+                                identify common delay patterns using the
+                                Analytics Dashboard and Delay Trend
+                                Insights pages.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-success bg-opacity-10 rounded h-100">
+                            <strong><i class="bi bi-gear"></i> Operations Team</strong>
+                            <p class="small text-muted mb-0 mt-1">
+                                Use prediction results and dashboard
+                                insights to optimise delivery operations
+                                and resource allocation.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-info bg-opacity-10 rounded h-100">
+                            <strong><i class="bi bi-person"></i> Customers</strong>
+                            <p class="small text-muted mb-0 mt-1">
+                                View estimated delivery time before
+                                ordering, improving transparency and
+                                customer satisfaction.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-warning bg-opacity-10 rounded h-100">
+                            <strong><i class="bi bi-bicycle"></i> Riders</strong>
+                            <p class="small text-muted mb-0 mt-1">
+                                Use estimated delivery time as a guide
+                                for planning routes and managing
+                                multiple orders.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-danger bg-opacity-10 rounded h-100">
+                            <strong><i class="bi bi-shop"></i> Restaurants</strong>
+                            <p class="small text-muted mb-0 mt-1">
+                                Plan food preparation timing based on
+                                estimated delivery time, ensuring food
+                                quality upon arrival.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
