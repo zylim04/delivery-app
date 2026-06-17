@@ -37,7 +37,6 @@
 .dp-hero .container { position: relative; z-index: 1; }
 
 .dp-eyebrow {
-    font-family: 'JetBrains Mono', monospace;
     font-size: .72rem;
     letter-spacing: .14em;
     text-transform: uppercase;
@@ -45,7 +44,6 @@
     margin-bottom: 1rem;
 }
 .dp-headline {
-    font-family: 'Space Grotesk', sans-serif;
     font-weight: 700;
     font-size: clamp(2rem, 4vw, 3.25rem);
     line-height: 1.15;
@@ -87,7 +85,6 @@
     padding: 1.5rem 1.75rem;
 }
 .dp-ticket-label {
-    font-family: 'JetBrains Mono', monospace;
     font-size: .68rem;
     letter-spacing: .14em;
     text-transform: uppercase;
@@ -116,7 +113,6 @@
 
 .dp-ticket-chip {
     display: inline-block;
-    font-family: 'JetBrains Mono', monospace;
     font-size: .72rem;
     letter-spacing: .08em;
     text-transform: uppercase;
@@ -139,7 +135,6 @@
 }
 
 .dp-ticket-eta {
-    font-family: 'JetBrains Mono', monospace;
     font-weight: 600;
     font-size: 3rem;
     line-height: 1;
@@ -152,7 +147,6 @@
     margin-left: .35rem;
 }
 .dp-ticket-conditions {
-    font-family: 'JetBrains Mono', monospace;
     font-size: .82rem;
     color: var(--dp-soft);
     transition: opacity .25s ease;
@@ -166,13 +160,11 @@
     border-top: 1px solid rgba(231,236,242,0.10);
 }
 .dp-stat-figure {
-    font-family: 'JetBrains Mono', monospace;
     font-weight: 600;
     font-size: 1.6rem;
     color: #E7ECF2;
 }
 .dp-stat-label {
-    font-family: 'JetBrains Mono', monospace;
     font-size: .68rem;
     letter-spacing: .1em;
     text-transform: uppercase;
@@ -182,7 +174,6 @@
 
 /* ── Light sections ────────────────────────────────────────────── */
 .dp-eyebrow-light {
-    font-family: 'JetBrains Mono', monospace;
     font-size: .72rem;
     letter-spacing: .14em;
     text-transform: uppercase;
@@ -192,7 +183,6 @@
     margin-bottom: .4rem;
 }
 .dp-section-title {
-    font-family: 'Space Grotesk', sans-serif;
     font-weight: 600;
 }
 
@@ -219,7 +209,6 @@
     margin-bottom: 1rem;
 }
 .dp-spec {
-    font-family: 'JetBrains Mono', monospace;
     font-size: .68rem;
     letter-spacing: .08em;
     text-transform: uppercase;
@@ -240,7 +229,7 @@
     <div class="container">
         <div class="row align-items-center gy-5">
             <div class="col-lg-6">
-                <div class="dp-eyebrow">Zomato India · 42,592 deliveries · XGBoost</div>
+                <div class="dp-eyebrow">Zomato India · 42,592 deliveries · LightGBM</div>
                 <h1 class="dp-headline">
                     Know when it's <span class="accent">actually</span> arriving.
                 </h1>
@@ -311,11 +300,11 @@
         <div class="col-md-4">
             <div class="dp-feature-card">
                 <div class="dp-feature-icon"><i class="bi bi-cpu"></i></div>
-                <span class="dp-spec">XGBoost · RandomizedSearchCV</span>
+                <span class="dp-spec">LightGBM · Optuna CV</span>
                 <h5>Best Model</h5>
                 <p class="text-muted mb-0">
-                    XGBoost tuned with RandomizedSearchCV 
-                    and 5-fold cross-validation on 42,592 
+                    LightGBM tuned with Optuna Bayesian optimisation
+                    and 5-fold cross-validation on 42,592
                     delivery records.
                 </p>
             </div>

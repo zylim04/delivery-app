@@ -268,11 +268,11 @@ def chat():
 
         context = """You are a delivery time prediction assistant.
 You help users understand food delivery time predictions made by an
-XGBoost machine learning model trained on 42,592 Indian food delivery
+LightGBM machine learning model trained on 42,592 Indian food delivery
 records.
 
 Key facts about the model:
-- Best model: XGBoost tuned with RandomizedSearchCV
+- Best model: LightGBM tuned with Optuna (Bayesian optimization)
 - Test R²: 0.8393 (explains 84% of delivery time variance)
 - Test RMSE: 3.7771 minutes
 - Training data: Zomato delivery dataset, India
@@ -328,12 +328,12 @@ Current prediction context:
 def admin():
     import json
     model_info = {
-        'name'      : 'XGBoost (Tuned - RandomizedSearchCV)',
+        'name'      : 'LightGBM (Tuned - Optuna)',
         'test_r2'   : 0.8393,
         'test_rmse' : 3.7771,
-        'test_mae'  : 3.0353,
+        'test_mae'  : 3.0418,
         'trained_on': '42,592 records',
-        'features'  : 18,
+        'features'  : 17,
         'file'      : 'best_model.pkl'
     }
     return render_template('admin.html', model_info=model_info)

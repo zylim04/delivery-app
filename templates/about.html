@@ -27,53 +27,71 @@
 }
 .dp-finding-list li:last-child { border-bottom: none; }
 .dp-finding-rank {
-    font-family: 'JetBrains Mono', monospace;
     font-size: .7rem; font-weight: 600;
     color: var(--dp-accent); flex-shrink: 0; width: 1.4rem;
 }
 
-/* Pipeline */
-.dp-pipeline-step {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: .75rem;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    padding: .5rem 1.1rem;
-    border-radius: 999px;
-    background: var(--dp-ink);
-    color: var(--dp-text);
-    border: 1px solid rgba(231,236,242,0.1);
+/* Methodology step cards */
+.dp-method-flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    align-items: stretch;
 }
-.dp-pipeline-step.final {
-    background: rgba(62,207,142,0.12);
+.dp-method-step {
+    flex: 1;
+    min-width: 130px;
+    background: #fff;
+    border: 1px solid rgba(14,17,22,0.08);
+    border-top: 3px solid var(--dp-accent);
+    border-radius: 12px;
+    padding: 1rem .85rem;
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(14,17,22,0.04);
+    position: relative;
+}
+.dp-method-step.final {
+    border-top-color: var(--dp-low);
+}
+.dp-method-num {
+    font-weight: 700;
+    font-size: .7rem;
+    color: var(--dp-accent);
+    letter-spacing: .05em;
+}
+.dp-method-step.final .dp-method-num {
     color: var(--dp-low);
-    border: 1px solid rgba(62,207,142,0.35);
 }
-.dp-pipeline-arrow {
-    color: var(--dp-muted);
-    font-size: .9rem;
+.dp-method-label {
+    font-weight: 600;
+    font-size: .8rem;
+    color: var(--dp-ink);
+    margin-top: .35rem;
+    line-height: 1.25;
 }
 
 /* Architecture nodes */
 .dp-arch-node {
-    background: var(--dp-ink);
+    background: #fff;
+    border: 1px solid rgba(14,17,22,0.08);
     border-radius: 12px;
     padding: 1.1rem .75rem;
     text-align: center;
-    color: var(--dp-text);
+    color: var(--dp-ink);
     height: 100%;
     border-top: 3px solid var(--dp-muted);
+    box-shadow: 0 1px 2px rgba(14,17,22,0.04);
 }
+
 .dp-arch-icon { font-size: 1.8rem; margin-bottom: .4rem; }
 .dp-arch-label {
-    font-family: 'Space Grotesk', sans-serif;
     font-weight: 600;
     font-size: .85rem;
 }
+
 .dp-arch-caption {
-    font-family: 'JetBrains Mono', monospace;
     font-size: .64rem;
-    color: var(--dp-muted);
+    color: #6B7480;
     margin-top: .2rem;
     text-transform: uppercase;
     letter-spacing: .05em;
@@ -85,7 +103,6 @@
     width: 80%;
 }
 .dp-arch-connector-label {
-    font-family: 'JetBrains Mono', monospace;
     font-size: .64rem;
     text-transform: uppercase;
     letter-spacing: .06em;
@@ -97,7 +114,6 @@
 .dp-flow-list li {
     display: flex; gap: .7rem;
     padding: .4rem 0;
-    font-family: 'JetBrains Mono', monospace;
     font-size: .8rem;
     color: var(--dp-soft);
 }
@@ -107,6 +123,31 @@
     flex-shrink: 0;
     width: 1.6rem;
 }
+/* White System Flow box (override dark dp-ticket on this page) */
+.dp-flow-box {
+    background: #fff;
+    border: 1px solid rgba(14,17,22,0.08);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    box-shadow: 0 1px 2px rgba(14,17,22,0.04);
+}
+.dp-flow-box .dp-ticket-label { color: #6B7480; }
+.dp-flow-list li { color: #4a5260; }
+
+/* White spec-sheet box (override dark dp-ticket on this page) */
+.dp-spec-box {
+    background: #fff;
+    border: 1px solid rgba(14,17,22,0.08);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    box-shadow: 0 1px 2px rgba(14,17,22,0.04);
+}
+.dp-spec-box.accent-left {
+    border-left: 4px solid var(--dp-low);
+}
+.dp-spec-box .dp-ticket-label { color: #6B7480; }
+.dp-spec-box .dp-mono { color: var(--dp-ink) !important; }
+.dp-spec-box .dp-mono .label { color: #6B7480; }
 </style>
 
 <div class="container mt-4 mb-5">
@@ -123,8 +164,8 @@
                 learning. It was developed as a Final Year Project (FYP)
                 using a dataset of 42,592 real delivery records from
                 the Zomato platform.</p>
-                <p class="text-muted mb-0">The system uses XGBoost, a gradient boosting ensemble
-                model tuned with RandomizedSearchCV and 5-fold
+                <p class="text-muted mb-0">The system uses LightGBM, a gradient boosting ensemble
+                model tuned with Optuna Bayesian optimisation and 5-fold
                 cross-validation to achieve a Test R² of 0.8393 and
                 Test RMSE of 3.78 minutes.</p>
             </div>
@@ -135,23 +176,31 @@
                 <ul class="dp-finding-list">
                     <li>
                         <span class="dp-finding-rank">01</span>
-                        <span>Identify key factors that influence
-                        food delivery time using feature importance analysis.</span>
+                        <span>To identify and rank the top factors
+                        affecting food delivery time in urban areas
+                        using SHAP feature importance analysis.</span>
                     </li>
                     <li>
                         <span class="dp-finding-rank">02</span>
-                        <span>Build a leakage-free preprocessing
-                        pipeline for reliable model training.</span>
+                        <span>To preprocess historical delivery data by
+                        handling missing values, removing structural
+                        errors, and engineering relevant features to
+                        produce a clean dataset.</span>
                     </li>
                     <li>
                         <span class="dp-finding-rank">03</span>
-                        <span>Compare multiple ML models and select
-                        the best performing model.</span>
+                        <span>To develop, tune, and compare multiple
+                        machine learning models and deploy the
+                        best-performing model, selected based on
+                        predictive accuracy and generalisation.</span>
                     </li>
                     <li>
                         <span class="dp-finding-rank">04</span>
-                        <span>Deploy the best model as a web-based
-                        prediction system.</span>
+                        <span>To develop an interactive web-based
+                        analytical dashboard that visualises delivery
+                        time predictions and key delay trend insights
+                        across traffic, weather, city, festival, and
+                        time dimensions.</span>
                     </li>
                 </ul>
             </div>
@@ -159,19 +208,31 @@
             <!-- Methodology -->
             <div class="card shadow-sm p-4 mb-4">
                 <h5 class="dp-section-title mb-3"><i class="bi bi-diagram-2" style="color: var(--dp-accent);"></i> Methodology</h5>
-                <div class="d-flex flex-wrap align-items-center
-                            justify-content-center gap-2 mt-2">
-                    <span class="dp-pipeline-step">EDA</span>
-                    <i class="bi bi-arrow-right dp-pipeline-arrow"></i>
-                    <span class="dp-pipeline-step">Cleaning</span>
-                    <i class="bi bi-arrow-right dp-pipeline-arrow"></i>
-                    <span class="dp-pipeline-step">Feature Engineering</span>
-                    <i class="bi bi-arrow-right dp-pipeline-arrow"></i>
-                    <span class="dp-pipeline-step">Modelling</span>
-                    <i class="bi bi-arrow-right dp-pipeline-arrow"></i>
-                    <span class="dp-pipeline-step">Evaluation</span>
-                    <i class="bi bi-arrow-right dp-pipeline-arrow"></i>
-                    <span class="dp-pipeline-step final">Deployment</span>
+                <div class="dp-method-flow mt-2">
+                    <div class="dp-method-step">
+                        <div class="dp-method-num">STEP 01</div>
+                        <div class="dp-method-label">EDA</div>
+                    </div>
+                    <div class="dp-method-step">
+                        <div class="dp-method-num">STEP 02</div>
+                        <div class="dp-method-label">Cleaning</div>
+                    </div>
+                    <div class="dp-method-step">
+                        <div class="dp-method-num">STEP 03</div>
+                        <div class="dp-method-label">Feature<br>Engineering</div>
+                    </div>
+                    <div class="dp-method-step">
+                        <div class="dp-method-num">STEP 04</div>
+                        <div class="dp-method-label">Modelling</div>
+                    </div>
+                    <div class="dp-method-step">
+                        <div class="dp-method-num">STEP 05</div>
+                        <div class="dp-method-label">Evaluation</div>
+                    </div>
+                    <div class="dp-method-step final">
+                        <div class="dp-method-num">STEP 06</div>
+                        <div class="dp-method-label">Deployment</div>
+                    </div>
                 </div>
                 <p class="text-muted small mt-3 text-center mb-0">
                     The pipeline follows CRISP-DM methodology with strict
@@ -188,8 +249,8 @@
                 <ul class="list-unstyled small text-muted mb-0">
                     <li class="mb-2">
                         <span class="dp-chip accent me-2">ML</span>
-                        XGBoost, Random Forest, Decision Tree,
-                        Linear Regression
+                        LightGBM, XGBoost, Random Forest,
+                        Decision Tree, Linear Regression
                     </li>
                     <li class="mb-2">
                         <span class="dp-chip low me-2">Tuning</span>
@@ -211,70 +272,71 @@
             </div>
 
             <!-- Dataset Info -->
-            <div class="dp-ticket shadow-sm mb-4">
+            <div class="dp-spec-box mb-4">
                 <div class="dp-ticket-label"><i class="bi bi-folder2-open"></i> Dataset</div>
-                <div class="dp-mono small" style="color: var(--dp-text); line-height: 1.9;">
+                <div class="dp-mono small" style="line-height: 1.9;">
                     <div class="d-flex justify-content-between">
-                        <span style="color: var(--dp-muted);">SOURCE</span>
+                        <span class="label" style="color:#6B7480;">SOURCE</span>
                         <span>Zomato Delivery</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span style="color: var(--dp-muted);">TOTAL ROWS</span>
+                        <span class="label" style="color:#6B7480;">TOTAL ROWS</span>
                         <span>45,584</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span style="color: var(--dp-muted);">AFTER CLEANING</span>
+                        <span class="label" style="color:#6B7480;">AFTER CLEANING</span>
                         <span>42,592</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span style="color: var(--dp-muted);">FEATURES</span>
+                        <span class="label" style="color:#6B7480;">FEATURES</span>
                         <span>20 inputs</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span style="color: var(--dp-muted);">TARGET</span>
+                        <span class="label" style="color:#6B7480;">TARGET</span>
                         <span>time_taken_min</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span style="color: var(--dp-muted);">TRAIN SPLIT</span>
+                        <span class="label" style="color:#6B7480;">TRAIN SPLIT</span>
                         <span>80% (34,073)</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span style="color: var(--dp-muted);">TEST SPLIT</span>
+                        <span class="label" style="color:#6B7480;">TEST SPLIT</span>
                         <span>20% (8,519)</span>
                     </div>
                 </div>
             </div>
 
             <!-- Best Model -->
-            <div class="dp-ticket shadow-sm" style="border-left-color: var(--dp-low);">
+            <div class="dp-spec-box accent-left">
                 <div class="dp-ticket-label"><i class="bi bi-trophy-fill"></i> Best Model</div>
-                <div class="dp-mono small" style="color: var(--dp-text); line-height: 1.9;">
+                <div class="dp-mono small" style="line-height: 1.9;">
                     <div class="d-flex justify-content-between">
-                        <span style="color: var(--dp-muted);">MODEL</span>
-                        <span>XGBoost</span>
+                        <span style="color:#6B7480;">MODEL</span>
+                        <span>LightGBM</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span style="color: var(--dp-muted);">TUNING</span>
-                        <span>RandomizedSearchCV</span>
+                        <span style="color:#6B7480;">TUNING</span>
+                        <span>Optuna CV</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span style="color: var(--dp-muted);">CV</span>
+                        <span style="color:#6B7480;">CV</span>
                         <span>5-fold</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span style="color: var(--dp-muted);">TEST RMSE</span>
+                        <span style="color:#6B7480;">TEST RMSE</span>
                         <span>3.7771 min</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span style="color: var(--dp-muted);">TEST R²</span>
+                        <span style="color:#6B7480;">TEST R²</span>
                         <span>0.8393</span>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <span style="color: var(--dp-muted);">TRAIN-TEST GAP</span>
-                        <span>0.0503</span>
+                        <span style="color:#6B7480;">TRAIN-TEST GAP</span>
+                        <span>0.0123</span>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -317,11 +379,11 @@
                 <div class="dp-arch-line"></div>
             </div>
 
-            <!-- XGBoost -->
+            <!-- LightGBM -->
             <div class="col-md-2">
                 <div class="dp-arch-node" style="border-top-color: var(--dp-low);">
                     <div class="dp-arch-icon">🤖</div>
-                    <div class="dp-arch-label">XGBoost</div>
+                    <div class="dp-arch-label">LightGBM</div>
                     <div class="dp-arch-caption">ML Model · .pkl</div>
                 </div>
             </div>
@@ -383,13 +445,13 @@
         </div>
 
         <!-- Flow description -->
-        <div class="dp-ticket mt-4">
+        <div class="dp-flow-box mt-4">
             <div class="dp-ticket-label"><i class="bi bi-signpost-2"></i> System Flow</div>
             <ul class="dp-flow-list">
                 <li><span class="dp-flow-rank">01</span><span>User opens browser</span></li>
                 <li><span class="dp-flow-rank">02</span><span>Sends request via HTTPS to Flask on Render</span></li>
                 <li><span class="dp-flow-rank">03</span><span>Flask routes to prediction API</span></li>
-                <li><span class="dp-flow-rank">04</span><span>XGBoost model processes input and returns prediction</span></li>
+                <li><span class="dp-flow-rank">04</span><span>LightGBM model processes input and returns prediction</span></li>
                 <li><span class="dp-flow-rank">05</span><span>Result displayed to user</span></li>
                 <li><span class="dp-flow-rank">06</span><span>User can ask AI assistant via Groq Llama 3 API</span></li>
                 <li><span class="dp-flow-rank">07</span><span>User can calculate distance using Leaflet.js map</span></li>

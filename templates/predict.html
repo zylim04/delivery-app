@@ -2,13 +2,84 @@
 {% block title %}Predict — DeliveryPredict AI{% endblock %}
 
 {% block content %}
+<style>
+/* Animated delivery route (predict placeholder) */
+.dp-route-anim {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 260px;
+    margin: 0 auto;
+    height: 48px;
+}
+.dp-route-store,
+.dp-route-home {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    z-index: 2;
+}
+.dp-route-track {
+    position: absolute;
+    left: 30px;
+    right: 30px;
+    top: 50%;
+    height: 2px;
+    transform: translateY(-50%);
+    background-image: linear-gradient(to right,
+        var(--dp-muted) 0, var(--dp-muted) 6px,
+        transparent 6px, transparent 12px);
+    background-size: 12px 2px;
+    background-repeat: repeat-x;
+    animation: dp-road 0.6s linear infinite;
+}
+.dp-route-scooter {
+    position: absolute;
+    left: 30px;
+    top: 50%;
+    font-size: 1.7rem;
+    z-index: 3;
+    transform: translateY(-50%);
+    animation: dp-drive 3.2s ease-in-out infinite,
+               dp-bob 0.5s ease-in-out infinite;
+}
+
+/* Scooter drives from store to home, then loops back */
+@keyframes dp-drive {
+    0%   { left: 30px; }
+    45%  { left: calc(100% - 60px); }
+    50%  { left: calc(100% - 60px); }
+    95%  { left: 30px; }
+    100% { left: 30px; }
+}
+/* Subtle up-down bob, like riding over bumps */
+@keyframes dp-bob {
+    0%, 100% { transform: translateY(-50%); }
+    50%      { transform: translateY(-65%); }
+}
+/* Dashed road "flows" toward the home */
+@keyframes dp-road {
+    0%   { background-position: 0 0; }
+    100% { background-position: -12px 0; }
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .dp-route-scooter,
+    .dp-route-track {
+        animation: none;
+    }
+    .dp-route-scooter { left: 50%; transform: translate(-50%, -50%); }
+}
+</style>
+
 <div class="container mt-4 mb-5">
 
     <span class="dp-eyebrow-light">Live Inference</span>
     <h3 class="dp-section-title mb-1"><i class="bi bi-stopwatch"></i> Predict Delivery Time</h3>
     <p class="text-muted mb-4">
         Enter the order's conditions and get an estimated delivery
-        time from the trained XGBoost model.
+        time from the trained LightGBM model.
     </p>
 
     <div class="row g-4">
@@ -192,7 +263,15 @@
             <!-- Placeholder -->
             <div class="dp-ticket shadow-sm text-center py-5" id="placeholder-card">
                 <div class="dp-ticket-label">Awaiting input</div>
-                <div style="font-size:2rem;" class="mb-2">🛵</div>
+
+                <!-- Animated delivery route -->
+                <div class="dp-route-anim mb-3">
+                    <span class="dp-route-store">🏠</span>
+                    <span class="dp-route-track"></span>
+                    <span class="dp-route-scooter">🛵</span>
+                    <span class="dp-route-home">🏪</span>
+                </div>
+
                 <p class="dp-mono small mb-0" style="color: var(--dp-soft);">
                     Fill in the delivery conditions and press<br>
                     "Predict Delivery Time" to see the estimate.
@@ -226,10 +305,12 @@
                 <div id="warning-container"></div>
 
                 <div class="row dp-mono small mt-3" style="color: var(--dp-soft);">
+
                     <div class="col-6">
                         <div style="color: var(--dp-muted); font-size:.68rem; letter-spacing:.08em; text-transform:uppercase;">Model</div>
-                        <div>XGBoost</div>
+                        <div>LightGBM</div>
                     </div>
+
                     <div class="col-6">
                         <div style="color: var(--dp-muted); font-size:.68rem; letter-spacing:.08em; text-transform:uppercase;">RMSE</div>
                         <div>±3.78 min</div>
@@ -378,10 +459,10 @@ window.addEventListener('load', function() {
 // ── Validate numeric inputs ────────────────────────────────────────
 function validateInputs() {
     const checks = [
-        { id: 'prep_time_min',           min: 0,   max: 30,  label: 'Preparation Time', unit: 'min' },
+        { id: 'prep_time_min',           min: 5,   max: 30,  label: 'Preparation Time', unit: 'min' },
         { id: 'delivery_person_age',     min: 18,  max: 60,  label: 'Rider Age',        unit: 'years' },
         { id: 'delivery_person_ratings', min: 2.5, max: 5.0, label: 'Rider Rating',     unit: '' },
-        { id: 'distance_km',             min: 0.1, max: 100, label: 'Distance',         unit: 'km' }
+        { id: 'distance_km',             min: 0.5, max: 30, label: 'Distance',         unit: 'km' }
     ];
 
     let allValid     = true;

@@ -18,12 +18,55 @@
 }
 .dp-finding-list li:last-child { border-bottom: none; }
 .dp-finding-rank {
-    font-family: 'JetBrains Mono', monospace;
     font-size: .7rem;
     font-weight: 600;
     color: var(--dp-accent);
     flex-shrink: 0;
     width: 1.4rem;
+}
+
+/* Insight boxes (white) */
+.dp-insight {
+    background: #fff;
+    border: 1px solid rgba(14,17,22,0.08);
+    border-left: 4px solid var(--dp-muted);
+    border-radius: 14px;
+    padding: 1.25rem;
+    height: 100%;
+    box-shadow: 0 1px 2px rgba(14,17,22,0.04);
+}
+.dp-insight-title {
+    font-size: 1rem;
+    color: var(--dp-ink);
+    margin-bottom: .5rem;
+    font-weight: 700;
+}
+.dp-insight p {
+    color: #5a6472;
+    font-size: .85rem;
+    margin-bottom: 0;
+}
+.dp-insight strong { color: var(--dp-ink); }
+
+/* Console-style comparison table */
+.dp-console-table table {
+    font-size: .82rem;
+}
+.dp-console-table table thead th {
+    background: var(--dp-ink);
+    color: var(--dp-text);
+    font-weight: 500;
+    border: none;
+}
+.dp-console-table table tbody tr:hover {
+    background: rgba(255,107,74,0.05);
+}
+.dp-console-table table th,
+.dp-console-table table td {
+    white-space: normal;
+    word-break: break-word;
+    vertical-align: middle;
+    text-align: center;
 }
 </style>
 
@@ -34,7 +77,7 @@
     </h3>
     <p class="text-muted mb-4">
         Feature importance computed using two methods:
-        <strong>SHAP (XGBoost)</strong> and
+        <strong>SHAP (LightGBM)</strong> and
         <strong>Random Forest Importance</strong>.
         Both methods are compared to confirm reliability of findings.
     </p>
@@ -56,7 +99,7 @@
             <div class="card shadow-sm p-4">
                 <h5 class="dp-section-title mb-1">
                     <i class="bi bi-bar-chart" style="color: var(--dp-accent);"></i>
-                    SHAP Feature Importance — XGBoost
+                    SHAP Feature Importance — LightGBM
                 </h5>
                 <p class="text-muted small mb-3">
                     Mean absolute SHAP values computed on 500 training samples.
@@ -75,9 +118,9 @@
                 <ul class="dp-finding-list">
                     <li>
                         <span class="dp-finding-rank">01</span>
-                        <span><strong>road_traffic_density_Low</strong> — Low
-                        traffic strongly reduces delivery time, highest
-                        impact by SHAP magnitude.</span>
+                        <span><strong>delivery_person_ratings</strong> — rider
+                        rating has the strongest impact; higher-rated
+                        riders deliver faster.</span>
                     </li>
                     <li>
                         <span class="dp-finding-rank">02</span>
@@ -86,8 +129,8 @@
                     </li>
                     <li>
                         <span class="dp-finding-rank">03</span>
-                        <span><strong>delivery_person_ratings</strong> — higher
-                        rated riders tend to deliver faster.</span>
+                        <span><strong>road_traffic_density_Low</strong> — low
+                        traffic strongly reduces delivery time.</span>
                     </li>
                     <li>
                         <span class="dp-finding-rank">04</span>
@@ -101,11 +144,11 @@
                     </li>
                 </ul>
             </div>
-                <div class="dp-feature-card h-auto">
-                    <div class="dp-feature-icon"><i class="bi bi-info-circle"></i></div>
-                    <span class="dp-spec">Game-theory based</span>
-                    <h6 class="dp-section-title">About SHAP</h6>
 
+            <div class="dp-feature-card h-auto">
+                <div class="dp-feature-icon"><i class="bi bi-info-circle"></i></div>
+                <span class="dp-spec">Game-theory based</span>
+                <h6 class="dp-section-title">About SHAP</h6>
                 <p class="small text-muted mb-2">
                     SHAP (SHapley Additive exPlanations) is a
                     game-theory based method for explaining ML predictions.
@@ -178,36 +221,39 @@
                     </li>
                 </ul>
             </div>
-
-            <div class="card shadow-sm p-4">
-                <h6 class="dp-section-title fw-bold mb-3">
-                    <i class="bi bi-arrow-left-right" style="color: var(--dp-low);"></i>
-                    SHAP vs RF — Top 5 Comparison
-                </h6>
-                <div class="table-responsive dp-console-table">
-                    <table class="table table-sm mb-0">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>SHAP</th>
-                                <th>RF</th>
-                            </tr>
-                        </thead>
-                        <tbody id="comparison-tbody">
-                            <tr><td>1</td><td id="shap1">—</td><td id="rf1">—</td></tr>
-                            <tr><td>2</td><td id="shap2">—</td><td id="rf2">—</td></tr>
-                            <tr><td>3</td><td id="shap3">—</td><td id="rf3">—</td></tr>
-                            <tr><td>4</td><td id="shap4">—</td><td id="rf4">—</td></tr>
-                            <tr><td>5</td><td id="shap5">—</td><td id="rf5">—</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p class="small text-muted mt-2 mb-0">
-                    Agreement between both methods confirms
-                    reliability of identified key factors.
-                </p>
-            </div>
         </div>
+    </div>
+    {% endif %}
+
+    <!-- SHAP vs RF Comparison (full width) -->
+    {% if use_rf %}
+    <div class="card shadow-sm p-4 mb-4">
+        <h5 class="dp-section-title mb-3">
+            <i class="bi bi-arrow-left-right" style="color: var(--dp-low);"></i>
+            SHAP vs RF — Top 5 Comparison
+        </h5>
+        <div class="table-responsive dp-console-table">
+            <table class="table table-sm table-bordered mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th>SHAP (LightGBM)</th>
+                        <th>Random Forest</th>
+                    </tr>
+                </thead>
+                <tbody id="comparison-tbody">
+                    <tr><td>1</td><td id="shap1">—</td><td id="rf1">—</td></tr>
+                    <tr><td>2</td><td id="shap2">—</td><td id="rf2">—</td></tr>
+                    <tr><td>3</td><td id="shap3">—</td><td id="rf3">—</td></tr>
+                    <tr><td>4</td><td id="shap4">—</td><td id="rf4">—</td></tr>
+                    <tr><td>5</td><td id="shap5">—</td><td id="rf5">—</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="small text-muted mt-2 mb-0">
+            Agreement between both methods confirms
+            reliability of identified key factors.
+        </p>
     </div>
     {% endif %}
 
@@ -216,7 +262,7 @@
         <h5 class="dp-section-title"><i class="bi bi-lightbulb" style="color: var(--dp-accent);"></i>
             Combined Interpretability Findings
         </h5>
-        <div class="row g-3 mt-1">
+        <div class="row g-4 mt-1">
             <div class="col-md-4">
                 <div class="dp-insight" style="border-left-color: var(--dp-jam);">
                     <div class="dp-insight-title">🚦 Traffic Conditions</div>
@@ -344,7 +390,14 @@ new Chart(document.getElementById('rfChart').getContext('2d'), {
 
 // ── Comparison table ──────────────────────────────────────────────
 function shortName(name) {
-    return name.length > 18 ? name.substring(0, 18) + '…' : name;
+    return name
+        .replace(/_/g, ' ')
+        .replace('road traffic density Low', 'Traffic (Low)')
+        .replace('delivery person ratings', 'Rider Ratings')
+        .replace('delivery person age', 'Rider Age')
+        .replace('distance km', 'Distance')
+        .replace('vehicle condition', 'Vehicle Condition')
+        .replace('multiple deliveries', 'Multiple Deliveries');
 }
 
 for (let i = 1; i <= 5; i++) {

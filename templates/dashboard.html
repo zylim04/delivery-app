@@ -52,25 +52,24 @@
     box-shadow: 0 0 0 3px rgba(255,107,74,0.2);
 }
 
-/* Insight tickets */
+/* Insight tickets (white) */
 .dp-insight {
-    background: var(--dp-ink);
+    background: #fff;
+    border: 1px solid rgba(14,17,22,0.08);
+    border-left: 4px solid var(--dp-muted);
     border-radius: 14px;
     padding: 1.25rem;
     height: 100%;
-    border-left: 4px solid var(--dp-muted);
-    color: var(--dp-text);
+    box-shadow: 0 1px 2px rgba(14,17,22,0.04);
 }
 .dp-insight-title {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: .68rem;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--dp-muted);
+    font-size: 1rem;
+    color: var(--dp-ink);
     margin-bottom: .5rem;
+    font-weight: 700;
 }
-.dp-insight p { color: var(--dp-soft); font-size: .85rem; margin-bottom: 0; }
-.dp-insight strong { color: var(--dp-text); }
+.dp-insight p { color: #5a6472; font-size: .85rem; margin-bottom: 0; }
+.dp-insight strong { color: var(--dp-ink); }
 </style>
 
 <div class="container mt-4 mb-5">
