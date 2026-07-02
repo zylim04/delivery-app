@@ -39,51 +39,24 @@ def home():
 def predict_page():
     return render_template('predict.html')
 
-@app.route('/performance')
-def performance():
-    return render_template('performance.html')
+
 
 @app.route('/about')
 def about():
     return render_template('about.html')
 
-@app.route('/features')
-def features():
+
+
+@app.route('/insights')
+def insights():
     import json
-
-    shap_path = os.path.join(BASE, 'model/shap_values.json')
-    rf_path   = os.path.join(BASE, 'model/rf_importance.json')
-
-    if os.path.exists(shap_path):
-        with open(shap_path, 'r') as f:
-            shap_data = json.load(f)
-        use_shap = True
-    else:
-        shap_data = {'features': [], 'values': []}
-        use_shap  = False
-
-    if os.path.exists(rf_path):
-        with open(rf_path, 'r') as f:
-            rf_data = json.load(f)
-        use_rf = True
-    else:
-        rf_data = {'features': [], 'values': []}
-        use_rf  = False
-
-    return render_template('features.html',
-                           shap_data = json.dumps(shap_data),
-                           rf_data   = json.dumps(rf_data),
-                           use_shap  = use_shap,
-                           use_rf    = use_rf)
-
-@app.route('/dataset')
-def dataset():
     import pandas as pd
 
+    # Read the dataset once
     df = pd.read_csv(os.path.join(BASE, 'Zomato Dataset.csv'))
 
-    # Basic statistics
-    stats = {
+    # ===== DATASET tab (on raw df, BEFORE any mutation) =====
+    dataset_stats = {
         'total_rows'     : 45584,
         'cleaned_rows'   : 42592,
         'total_features' : 20,
@@ -93,149 +66,137 @@ def dataset():
         'min_delivery'   : int(df['Time_taken (min)'].min()),
         'max_delivery'   : int(df['Time_taken (min)'].max()),
     }
-
-    # Feature list
     features = df.columns.tolist()
-
-    # Sample rows — first 20
     sample = df.head(20).to_html(
-        classes='table table-sm table-bordered table-hover',
-        index=False,
-        border=0
-    )
-
-    # Missing values per column
+        classes='table table-sm table-bordered table-hover', index=False, border=0)
     missing = df.isnull().sum()
     missing_df = missing[missing > 0].reset_index()
     missing_df.columns = ['Column', 'Missing Count']
     missing_df['Missing %'] = ((missing_df['Missing Count'] / len(df)) * 100).round(2)
     missing_table = missing_df.to_html(
-        classes='table table-sm table-bordered',
-        index=False,
-        border=0
-    )
+        classes='table table-sm table-bordered', index=False, border=0)
 
-    return render_template('dataset.html',
-                           stats=stats,
-                           features=features,
-                           sample=sample,
-                           missing_table=missing_table)
-
-
-
-@app.route('/dashboard')
-def dashboard():
-    import pandas as pd
-    import json
-
-    df = pd.read_csv(os.path.join(BASE, 'Zomato Dataset.csv'))
+    # ===== DASHBOARD tab =====
     df.columns = df.columns.str.strip()
-    # Strip whitespace from categorical values (common Zomato dataset issue)
     for col in ['Road_traffic_density', 'Weather_conditions', 'City',
                 'Festival', 'Type_of_order', 'Type_of_vehicle']:
         if col in df.columns:
             df[col] = df[col].astype(str).str.strip()
-            
     df = df.dropna(subset=['Time_taken (min)'])
 
     avg_time = round(df['Time_taken (min)'].mean(), 1)
-    total    = len(df)
+    total = len(df)
 
-    # Traffic
     traffic_order = ['Low', 'Medium', 'High', 'Jam']
     traffic_avg = (df.groupby('Road_traffic_density')['Time_taken (min)']
                      .mean().round(1).reindex(traffic_order))
-    traffic_data = {'labels': traffic_avg.index.tolist(),
-                     'values': traffic_avg.values.tolist()}
-    jam_avg      = traffic_avg.get('Jam', 0)
-    low_avg      = traffic_avg.get('Low', 0)
+    traffic_data = {'labels': traffic_avg.index.tolist(), 'values': traffic_avg.values.tolist()}
+    jam_avg = traffic_avg.get('Jam', 0)
+    low_avg = traffic_avg.get('Low', 0)
     traffic_diff = round(jam_avg - low_avg, 1)
-    max_traffic  = traffic_avg.idxmax()
+    max_traffic = traffic_avg.idxmax()
 
-    # Weather
     weather_avg = (df.groupby('Weather_conditions')['Time_taken (min)']
                      .mean().round(1).sort_values(ascending=False))
-    weather_data  = {'labels': weather_avg.index.tolist(),
-                      'values': weather_avg.values.tolist()}
+    weather_data = {'labels': weather_avg.index.tolist(), 'values': weather_avg.values.tolist()}
     worst_weather = weather_avg.idxmax()
 
-    # City
-    city_avg  = df.groupby('City')['Time_taken (min)'].mean().round(1)
-    city_data = {'labels': city_avg.index.tolist(),
-                  'values': city_avg.values.tolist()}
+    city_avg = df.groupby('City')['Time_taken (min)'].mean().round(1)
+    city_data = {'labels': city_avg.index.tolist(), 'values': city_avg.values.tolist()}
 
-    # Festival
     festival_avg = df.groupby('Festival')['Time_taken (min)'].mean().round(1)
     nofest_avg = festival_avg.get('No', 0)
-    fest_avg   = festival_avg.get('Yes', 0)
-    fest_diff  = round(fest_avg - nofest_avg, 1)
-    festival_data = {'labels': ['Non-Festival', 'Festival'],
-                      'values': [nofest_avg, fest_avg]}
+    fest_avg = festival_avg.get('Yes', 0)
+    fest_diff = round(fest_avg - nofest_avg, 1)
+    festival_data = {'labels': ['Non-Festival', 'Festival'], 'values': [nofest_avg, fest_avg]}
 
-    # Order hour
     df['order_hour'] = pd.to_datetime(df['Time_Orderd'], errors='coerce').dt.hour
-    hour_avg = (df.groupby('order_hour')['Time_taken (min)']
-                  .mean().round(1).sort_index())
+    hour_avg = (df.groupby('order_hour')['Time_taken (min)'].mean().round(1).sort_index())
     hour_data = {'labels': [f"{int(h):02d}:00" for h in hour_avg.index.tolist()],
-                  'values': hour_avg.values.tolist()}
+                 'values': hour_avg.values.tolist()}
 
-    # Day of week
     df['order_date'] = pd.to_datetime(df['Order_Date'], dayfirst=True, errors='coerce')
     df['day_of_week'] = df['order_date'].dt.day_name()
     day_order = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
-    day_avg = (df.groupby('day_of_week')['Time_taken (min)']
-                 .mean().round(1).reindex(day_order))
-    day_data = {'labels': day_avg.index.tolist(),
-                 'values': day_avg.fillna(0).values.tolist()}
+    day_avg = (df.groupby('day_of_week')['Time_taken (min)'].mean().round(1).reindex(day_order))
+    day_data = {'labels': day_avg.index.tolist(), 'values': day_avg.fillna(0).values.tolist()}
 
-    # Multiple deliveries
-    multi_avg = (df.groupby('multiple_deliveries')['Time_taken (min)']
-                    .mean().round(1).sort_index())
+    multi_avg = (df.groupby('multiple_deliveries')['Time_taken (min)'].mean().round(1).sort_index())
     multi_data = {'labels': [str(int(m)) for m in multi_avg.index.tolist()],
-                   'values': multi_avg.values.tolist()}
+                  'values': multi_avg.values.tolist()}
 
-    # Delay classification
     def classify_delay(t):
-        if t <= 25:
-            return 'Normal'
-        elif t <= 35:
-            return 'Slight Delay'
-        else:
-            return 'High Delay'
+        if t <= 25: return 'Normal'
+        elif t <= 35: return 'Slight Delay'
+        else: return 'High Delay'
 
     df['delay_class'] = df['Time_taken (min)'].apply(classify_delay)
-    delay_order  = ['Normal', 'Slight Delay', 'High Delay']
-    delay_counts = (df['delay_class'].value_counts()
-                      .reindex(delay_order).fillna(0))
-    delay_dist = {'labels': delay_order,
-                   'values': delay_counts.values.tolist()}
+    delay_order = ['Normal', 'Slight Delay', 'High Delay']
+    delay_counts = (df['delay_class'].value_counts().reindex(delay_order).fillna(0))
+    delay_dist = {'labels': delay_order, 'values': delay_counts.values.tolist()}
     high_delay_pct = round((df['delay_class'] == 'High Delay').mean() * 100, 1)
 
-    stats = {
-        'avg_time'      : avg_time,
-        'total'         : f"{total:,}",
-        'max_traffic'   : max_traffic,
-        'worst_weather' : worst_weather,
-        'high_delay_pct': high_delay_pct,
-        'jam_avg'       : jam_avg,
-        'low_avg'       : low_avg,
-        'traffic_diff'  : traffic_diff,
-        'fest_avg'      : fest_avg,
-        'nofest_avg'    : nofest_avg,
-        'fest_diff'     : fest_diff
+    dashboard_stats = {
+        'avg_time': avg_time, 'total': f"{total:,}", 'max_traffic': max_traffic,
+        'worst_weather': worst_weather, 'high_delay_pct': high_delay_pct,
+        'jam_avg': jam_avg, 'low_avg': low_avg, 'traffic_diff': traffic_diff,
+        'fest_avg': fest_avg, 'nofest_avg': nofest_avg, 'fest_diff': fest_diff
     }
 
-    return render_template('dashboard.html',
-        traffic_data  = json.dumps(traffic_data),
-        weather_data  = json.dumps(weather_data),
-        city_data     = json.dumps(city_data),
-        festival_data = json.dumps(festival_data),
-        hour_data     = json.dumps(hour_data),
-        day_data      = json.dumps(day_data),
-        multi_data    = json.dumps(multi_data),
-        delay_dist    = json.dumps(delay_dist),
-        stats         = stats
-    )
+    # ===== FEATURES tab =====
+    shap_path = os.path.join(BASE, 'model/shap_values.json')
+    rf_path   = os.path.join(BASE, 'model/rf_importance.json')
+    if os.path.exists(shap_path):
+        with open(shap_path) as f: shap_data = json.load(f)
+        use_shap = True
+    else:
+        shap_data = {'features': [], 'values': []}; use_shap = False
+    if os.path.exists(rf_path):
+        with open(rf_path) as f: rf_data = json.load(f)
+        use_rf = True
+    else:
+        rf_data = {'features': [], 'values': []}; use_rf = False
+
+    return render_template('insights.html',
+        dataset_stats=dataset_stats, features=features,
+        sample=sample, missing_table=missing_table,
+        dashboard_stats=dashboard_stats,
+        traffic_data=json.dumps(traffic_data),
+        weather_data=json.dumps(weather_data),
+        city_data=json.dumps(city_data),
+        festival_data=json.dumps(festival_data),
+        hour_data=json.dumps(hour_data),
+        day_data=json.dumps(day_data),
+        multi_data=json.dumps(multi_data),
+        delay_dist=json.dumps(delay_dist),
+        shap_data=json.dumps(shap_data),
+        rf_data=json.dumps(rf_data),
+        use_shap=use_shap, use_rf=use_rf)
+
+
+# Keep old URLs working — redirect to the merged Insights tabs
+@app.route('/dashboard')
+def dashboard():
+    from flask import redirect, url_for
+    return redirect(url_for('insights') + '#dashboard')
+
+@app.route('/dataset')
+def dataset():
+    from flask import redirect, url_for
+    return redirect(url_for('insights') + '#dataset')
+
+@app.route('/performance')
+def performance():
+    from flask import redirect, url_for
+    return redirect(url_for('insights') + '#performance')
+
+@app.route('/features')
+def features():
+    from flask import redirect, url_for
+    return redirect(url_for('insights') + '#features')
+
+
+
 
 
 # Redirect old /trends links to the merged dashboard

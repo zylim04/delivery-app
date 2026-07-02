@@ -1,0 +1,1337 @@
+{% extends 'base.html' %}
+{% block title %}Insights{% endblock %}
+
+{% block content %}
+<style>
+/* ── Tab bar ─────────────────────────────────────────────────── */
+.dp-tab-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem;
+    border-bottom: 1px solid rgba(14,17,22,0.1);
+    margin-bottom: 1.5rem;
+}
+.dp-tab {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: .6rem 1.1rem;
+    font-weight: 600;
+    font-size: .9rem;
+    color: var(--dp-muted);
+    cursor: pointer;
+    transition: color .15s ease, border-color .15s ease;
+}
+.dp-tab:hover { color: var(--dp-ink); }
+.dp-tab.active {
+    color: var(--dp-accent);
+    border-bottom-color: var(--dp-accent);
+}
+.dp-tab-panel { display: none; }
+.dp-tab-panel.active { display: block; }
+
+/* ===== DASHBOARD panel ===== */
+#panel-dashboard .dp-stat-card {
+    background: #fff;
+    border: 1px solid rgba(14,17,22,0.07);
+    border-top: 3px solid var(--dp-muted);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+    height: 100%;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+#panel-dashboard .dp-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(14,17,22,0.08);
+}
+#panel-dashboard .dp-stat-figure {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 1.7rem;
+    color: var(--dp-ink);
+}
+#panel-dashboard .dp-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .65rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--dp-muted);
+    margin-top: .35rem;
+}
+#panel-dashboard .dp-filter-bar {
+    background: var(--dp-ink);
+    border-radius: 16px;
+    padding: 1.1rem 1.25rem;
+    color: var(--dp-text);
+}
+#panel-dashboard .dp-select-dark {
+    background: var(--dp-panel);
+    border: 1px solid rgba(231,236,242,0.14);
+    color: var(--dp-text);
+}
+#panel-dashboard .dp-select-dark:focus {
+    background: var(--dp-panel);
+    border-color: var(--dp-accent);
+    color: var(--dp-text);
+    box-shadow: 0 0 0 3px rgba(255,107,74,0.2);
+}
+#panel-dashboard .dp-insight {
+    background: #fff;
+    border: 1px solid rgba(14,17,22,0.08);
+    border-left: 4px solid var(--dp-muted);
+    border-radius: 14px;
+    padding: 1.25rem;
+    height: 100%;
+    box-shadow: 0 1px 2px rgba(14,17,22,0.04);
+}
+#panel-dashboard .dp-insight-title {
+    font-size: 1rem; color: var(--dp-ink);
+    margin-bottom: .5rem; font-weight: 700;
+}
+#panel-dashboard .dp-insight p { color: #5a6472; font-size: .85rem; margin-bottom: 0; }
+#panel-dashboard .dp-insight strong { color: var(--dp-ink); }
+
+/* ===== DATASET panel ===== */
+#panel-dataset .dp-stat-card {
+    background: #fff;
+    border: 1px solid rgba(14,17,22,0.07);
+    border-top: 3px solid var(--dp-muted);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+    height: 100%;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+#panel-dataset .dp-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(14,17,22,0.08);
+}
+#panel-dataset .dp-stat-figure {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 1.6rem;
+    color: var(--dp-ink);
+}
+#panel-dataset .dp-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .64rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--dp-muted);
+    margin-top: .35rem;
+}
+#panel-dataset .dp-target-stat { text-align: center; }
+#panel-dataset .dp-target-figure {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 1.9rem;
+}
+#panel-dataset .dp-target-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .65rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--dp-muted);
+    margin-top: .3rem;
+}
+#panel-dataset .dp-feature-list .list-group-item {
+    border: none;
+    border-bottom: 1px solid rgba(14,17,22,0.06);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .82rem;
+    padding: .5rem .25rem;
+}
+#panel-dataset .dp-feature-list .list-group-item:last-child { border-bottom: none; }
+#panel-dataset .dp-target-row { color: var(--dp-accent) !important; font-weight: 600; }
+#panel-dataset .dp-console-table table {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+}
+#panel-dataset .dp-console-table table thead th {
+    background: var(--dp-ink); color: var(--dp-text);
+    font-weight: 500; letter-spacing: .04em; border: none;
+}
+#panel-dataset .dp-console-table table tbody td { color: #3a3f4a; }
+#panel-dataset .dp-console-table table tbody tr:hover { background: rgba(255,107,74,0.06); }
+
+/* ===== PERFORMANCE panel ===== */
+#panel-performance .dp-chip.blue {
+    background: rgba(91,141,239,0.12); color: #5B8DEF;
+    border: 1px solid rgba(91,141,239,0.35);
+}
+#panel-performance .dp-chip.high {
+    background: rgba(255,159,90,0.12);
+    border: 1px solid rgba(126,140,160,0.3);
+    color: var(--dp-muted);
+}
+#panel-performance .dp-row-best { background: rgba(255,107,74,0.06) !important; }
+#panel-performance .dp-console-table table { font-size: .8rem; }
+#panel-performance .dp-console-table table thead th {
+    background: var(--dp-ink); color: var(--dp-text);
+    font-weight: 500; letter-spacing: .04em; border: none;
+    vertical-align: middle;
+}
+#panel-performance .dp-console-table table tbody tr:hover { background: rgba(255,107,74,0.05); }
+#panel-performance .dp-insight {
+    background: #fff;
+    border: 1px solid rgba(14,17,22,0.08);
+    border-left: 4px solid var(--dp-muted);
+    border-radius: 14px;
+    padding: 1.25rem;
+    height: 100%;
+    box-shadow: 0 1px 2px rgba(14,17,22,0.04);
+}
+#panel-performance .dp-insight-title {
+    font-size: 1rem; color: var(--dp-ink);
+    margin-bottom: .5rem; font-weight: 700;
+}
+#panel-performance .dp-insight p { color: #5a6472; font-size: .85rem; margin-bottom: 0; }
+#panel-performance .dp-insight strong { color: var(--dp-ink); }
+
+/* ===== FEATURES panel ===== */
+#panel-features .dp-finding-list { list-style: none; padding-left: 0; margin: 0; }
+#panel-features .dp-finding-list li {
+    display: flex; gap: .6rem; padding: .5rem 0;
+    border-bottom: 1px solid rgba(14,17,22,0.06);
+    font-size: .85rem; color: #5a6472;
+}
+#panel-features .dp-finding-list li:last-child { border-bottom: none; }
+#panel-features .dp-finding-rank {
+    font-size: .7rem; font-weight: 600; color: var(--dp-accent);
+    flex-shrink: 0; width: 1.4rem;
+}
+#panel-features .dp-insight {
+    background: #fff;
+    border: 1px solid rgba(14,17,22,0.08);
+    border-left: 4px solid var(--dp-muted);
+    border-radius: 14px;
+    padding: 1.25rem;
+    height: 100%;
+    box-shadow: 0 1px 2px rgba(14,17,22,0.04);
+}
+#panel-features .dp-insight-title {
+    font-size: 1rem; color: var(--dp-ink);
+    margin-bottom: .5rem; font-weight: 700;
+}
+#panel-features .dp-insight p { color: #5a6472; font-size: .85rem; margin-bottom: 0; }
+#panel-features .dp-insight strong { color: var(--dp-ink); }
+#panel-features .dp-console-table table { font-size: .82rem; }
+#panel-features .dp-console-table table thead th {
+    background: var(--dp-ink); color: var(--dp-text);
+    font-weight: 500; border: none;
+}
+#panel-features .dp-console-table table tbody tr:hover { background: rgba(255,107,74,0.05); }
+#panel-features .dp-console-table table th,
+#panel-features .dp-console-table table td {
+    white-space: normal; word-break: break-word;
+    vertical-align: middle; text-align: center;
+}
+</style>
+
+<div class="container mt-4">
+    <span class="dp-eyebrow-light">Model &amp; Data</span>
+    <h3 class="dp-section-title mb-3"><i class="bi bi-clipboard-data"></i> Insights</h3>
+    <div class="dp-tab-bar">
+        <button class="dp-tab active" data-tab="dashboard"><i class="bi bi-bar-chart-line"></i> Dashboard</button>
+        <button class="dp-tab" data-tab="dataset"><i class="bi bi-folder2-open"></i> Dataset</button>
+        <button class="dp-tab" data-tab="performance"><i class="bi bi-graph-up"></i> Performance</button>
+        <button class="dp-tab" data-tab="features"><i class="bi bi-bar-chart"></i> Features</button>
+    </div>
+</div>
+
+<!-- ============================ DASHBOARD ============================ -->
+<div id="panel-dashboard" class="dp-tab-panel active">
+<div class="container mb-5">
+    <span class="dp-eyebrow-light">Operational Analytics</span>
+    <h4 class="dp-section-title mb-1"><i class="bi bi-bar-chart-line"></i> Analytics Dashboard</h4>
+    <p class="text-muted mb-4">
+        Delay trends across {{ dashboard_stats.total }} delivery records.
+    </p>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="dp-stat-card" style="border-top-color: var(--dp-accent);">
+                <div class="dp-stat-figure">{{ dashboard_stats.avg_time }}</div>
+                <div class="dp-stat-label">Avg Delivery Time (min)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dp-stat-card" style="border-top-color: var(--dp-low);">
+                <div class="dp-stat-figure">{{ dashboard_stats.total }}</div>
+                <div class="dp-stat-label">Total Records</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dp-stat-card" style="border-top-color: var(--dp-jam);">
+                <div class="dp-stat-figure">{{ dashboard_stats.high_delay_pct }}%</div>
+                <div class="dp-stat-label">High Delay Rate (&gt;35 min)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dp-stat-card" style="border-top-color: var(--dp-medium);">
+                <div class="dp-stat-figure">{{ dashboard_stats.max_traffic }}</div>
+                <div class="dp-stat-label">Highest Delay Traffic</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dp-filter-bar shadow-sm mb-4">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-1">
+                <span class="dp-ticket-label mb-0"><i class="bi bi-funnel"></i> Filter</span>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-sm dp-select-dark" id="filterCity" onchange="applyFilters()">
+                    <option value="all">All Cities</option>
+                    <option value="Metropolitian">Metropolitian</option>
+                    <option value="Urban">Urban</option>
+                    <option value="Semi-Urban">Semi-Urban</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-sm dp-select-dark" id="filterTraffic" onchange="applyFilters()">
+                    <option value="all">All Traffic</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Jam">Jam</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-sm dp-select-dark" id="filterWeather" onchange="applyFilters()">
+                    <option value="all">All Weather</option>
+                    <option value="Sunny">Sunny</option>
+                    <option value="Cloudy">Cloudy</option>
+                    <option value="Fog">Fog</option>
+                    <option value="Stormy">Stormy</option>
+                    <option value="Sandstorms">Sandstorms</option>
+                    <option value="Windy">Windy</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select form-select-sm dp-select-dark" id="filterFestival" onchange="applyFilters()">
+                    <option value="all">All Periods</option>
+                    <option value="Yes">Festival</option>
+                    <option value="No">Non-Festival</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-dp-outline btn-sm w-100" onclick="resetFilters()">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </button>
+            </div>
+            <div class="col-md-1 text-end">
+                <span class="dp-chip low" id="filterCount">{{ dashboard_stats.total }} rows</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
+                <h6 class="dp-section-title fw-bold mb-3">
+                    <i class="bi bi-pie-chart" style="color: var(--dp-accent);"></i>
+                    Delay Classification Distribution
+                </h6>
+                <div style="height: 220px;"><canvas id="delayDistChart"></canvas></div>
+                <div class="mt-3">
+                    <span class="dp-chip low me-1">Normal ≤ 25 min</span>
+                    <span class="dp-chip medium me-1">Slight Delay 26–35 min</span>
+                    <span class="dp-chip jam">High Delay &gt; 35 min</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
+                <h6 class="dp-section-title fw-bold mb-3">
+                    <i class="bi bi-car-front" style="color: var(--dp-jam);"></i>
+                    Avg Delivery Time by Traffic Density
+                </h6>
+                <div style="height: 220px;"><canvas id="trafficChart"></canvas></div>
+                <p class="text-muted small mt-2">
+                    Jam traffic increases delivery time by {{ dashboard_stats.traffic_diff }} min vs Low traffic.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
+                <h6 class="dp-section-title fw-bold mb-3">
+                    <i class="bi bi-cloud-rain" style="color: #5B8DEF;"></i>
+                    Avg Delivery Time by Weather Condition
+                </h6>
+                <div style="height: 220px;"><canvas id="weatherChart"></canvas></div>
+                <p class="text-muted small mt-2">
+                    {{ dashboard_stats.worst_weather }} conditions cause the highest delivery delays.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
+                <h6 class="dp-section-title fw-bold mb-3">
+                    <i class="bi bi-calendar-event" style="color: var(--dp-accent);"></i>
+                    Avg Delivery Time — Festival vs Non-Festival
+                </h6>
+                <div style="height: 220px;"><canvas id="festivalChart"></canvas></div>
+                <p class="text-muted small mt-2">
+                    Festival periods add {{ dashboard_stats.fest_diff }} min on average.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
+                <h6 class="dp-section-title fw-bold mb-3">
+                    <i class="bi bi-buildings" style="color: var(--dp-low);"></i>
+                    Avg Delivery Time by City
+                </h6>
+                <div style="height: 220px;"><canvas id="cityChart"></canvas></div>
+                <p class="text-muted small mt-2">
+                    Urban and metropolitan areas show longer delivery times.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
+                <h6 class="dp-section-title fw-bold mb-3">
+                    <i class="bi bi-boxes" style="color: var(--dp-muted);"></i>
+                    Impact of Multiple Deliveries
+                </h6>
+                <div style="height: 220px;"><canvas id="multiChart"></canvas></div>
+                <p class="text-muted small mt-2">
+                    Riders handling more simultaneous deliveries take longer per delivery.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
+                <h6 class="dp-section-title fw-bold mb-3">
+                    <i class="bi bi-clock" style="color: var(--dp-medium);"></i>
+                    Avg Delivery Time by Order Hour
+                </h6>
+                <div style="height: 220px;"><canvas id="hourChart"></canvas></div>
+                <p class="text-muted small mt-2">
+                    Evening peak hours (17–23) show longer delivery times.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4 h-100 d-flex flex-column">
+                <h6 class="dp-section-title fw-bold mb-3">
+                    <i class="bi bi-calendar3" style="color: #5B8DEF;"></i>
+                    Avg Delivery Time by Day of Week
+                </h6>
+                <div style="height: 220px;"><canvas id="dayChart"></canvas></div>
+                <p class="text-muted small mt-2">
+                    Weekends tend to have higher delivery times due to increased demand.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm p-4">
+        <h5 class="dp-section-title"><i class="bi bi-lightbulb" style="color: var(--dp-accent);"></i> Key Insights</h5>
+        <div class="row g-3 mt-1">
+            <div class="col-md-3">
+                <div class="dp-insight" style="border-left-color: var(--dp-jam);">
+                    <div class="dp-insight-title">🚦 Traffic Impact</div>
+                    <p>Jam traffic increases average delivery time by
+                        <strong>{{ dashboard_stats.traffic_diff }} min</strong> compared to Low
+                        traffic ({{ dashboard_stats.jam_avg }} vs {{ dashboard_stats.low_avg }} min).</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dp-insight" style="border-left-color: #5B8DEF;">
+                    <div class="dp-insight-title">🌧 Weather Impact</div>
+                    <p><strong>{{ dashboard_stats.worst_weather }}</strong> conditions cause the
+                        most delivery delays among all weather types.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dp-insight" style="border-left-color: var(--dp-accent);">
+                    <div class="dp-insight-title">🎉 Festival Impact</div>
+                    <p>Festival periods add <strong>{{ dashboard_stats.fest_diff }} min</strong>
+                        on average ({{ dashboard_stats.fest_avg }} vs {{ dashboard_stats.nofest_avg }} min).</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dp-insight" style="border-left-color: var(--dp-medium);">
+                    <div class="dp-insight-title">📊 Overall Delay Rate</div>
+                    <p><strong>{{ dashboard_stats.high_delay_pct }}%</strong> of all deliveries
+                        exceed 35 minutes, classified as High Delay.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================ DATASET ============================ -->
+<div id="panel-dataset" class="dp-tab-panel">
+<div class="container mb-5">
+    <span class="dp-eyebrow-light">Data Foundation</span>
+    <h4 class="dp-section-title mb-4"><i class="bi bi-folder2-open"></i> Dataset Summary</h4>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="dp-stat-card" style="border-top-color: #5B8DEF;">
+                <div class="dp-stat-figure">{{ dataset_stats.total_rows }}</div>
+                <div class="dp-stat-label">Total Raw Rows</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dp-stat-card" style="border-top-color: var(--dp-low);">
+                <div class="dp-stat-figure">{{ dataset_stats.cleaned_rows }}</div>
+                <div class="dp-stat-label">Rows After Cleaning</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dp-stat-card" style="border-top-color: var(--dp-accent);">
+                <div class="dp-stat-figure">{{ dataset_stats.total_features }}</div>
+                <div class="dp-stat-label">Input Features</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dp-stat-card" style="border-top-color: var(--dp-accent);">
+                <div class="dp-stat-figure">{{ dataset_stats.avg_delivery }}</div>
+                <div class="dp-stat-label">Avg Delivery Time (min)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="dp-stat-card" style="border-top-color: var(--dp-low);">
+                <div class="dp-stat-figure">{{ dataset_stats.min_delivery }}</div>
+                <div class="dp-stat-label">Min Delivery Time (min)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dp-stat-card" style="border-top-color: var(--dp-jam);">
+                <div class="dp-stat-figure">{{ dataset_stats.max_delivery }}</div>
+                <div class="dp-stat-label">Max Delivery Time (min)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dp-stat-card" style="border-top-color: var(--dp-medium);">
+                <div class="dp-stat-figure">{{ dataset_stats.missing_before }}</div>
+                <div class="dp-stat-label">Missing Values (Raw)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dp-stat-card" style="border-top-color: var(--dp-low);">
+                <div class="dp-stat-figure">0</div>
+                <div class="dp-stat-label">Missing After Preprocessing</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm p-4 h-100">
+                <h5 class="dp-section-title">
+                    <i class="bi bi-list-ul" style="color: var(--dp-accent);"></i> Dataset Columns
+                </h5>
+                <ul class="list-group list-group-flush dp-feature-list mt-2">
+                    {% for feature in features %}
+                    <li class="list-group-item {% if feature == 'Time_taken (min)' %}dp-target-row{% endif %}">
+                        {% if feature == 'Time_taken (min)' %}
+                        🎯 {{ feature }} <span class="dp-chip accent" style="font-size:.6rem; padding:.15rem .5rem; margin-left:.4rem;">TARGET</span>
+                        {% else %}
+                        {{ feature }}
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm p-4 mb-4">
+                <h5 class="dp-section-title">
+                    <i class="bi bi-exclamation-triangle" style="color: var(--dp-medium);"></i>
+                    Missing Values (Before Cleaning)
+                </h5>
+                <div class="table-responsive mt-2 dp-console-table">
+                    {{ missing_table | safe }}
+                </div>
+                <p class="text-muted small mt-2">
+                    All missing values were handled during preprocessing —
+                    numerical columns imputed with median, categorical columns
+                    imputed with mode. Rows with missing core time fields were dropped.
+                </p>
+            </div>
+
+            <div class="card shadow-sm p-4">
+                <h5 class="dp-section-title">
+                    <i class="bi bi-clock" style="color: var(--dp-accent);"></i>
+                    Target Variable — time_taken_min
+                </h5>
+                <div class="row text-center mt-3">
+                    <div class="col-4 dp-target-stat">
+                        <div class="dp-target-figure" style="color: var(--dp-low);">{{ dataset_stats.min_delivery }}</div>
+                        <div class="dp-target-label">Minimum (min)</div>
+                    </div>
+                    <div class="col-4 dp-target-stat">
+                        <div class="dp-target-figure" style="color: var(--dp-accent);">{{ dataset_stats.avg_delivery }}</div>
+                        <div class="dp-target-label">Average (min)</div>
+                    </div>
+                    <div class="col-4 dp-target-stat">
+                        <div class="dp-target-figure" style="color: var(--dp-jam);">{{ dataset_stats.max_delivery }}</div>
+                        <div class="dp-target-label">Maximum (min)</div>
+                    </div>
+                </div>
+                <div style="height: 220px;" class="mt-4"><canvas id="deliveryChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm p-4 mb-4">
+        <h5 class="dp-section-title">
+            <i class="bi bi-bar-chart" style="color: var(--dp-accent);"></i>
+            Feature Distributions
+        </h5>
+        <div class="row g-4 mt-1">
+            <div class="col-md-4">
+                <h6 class="text-muted text-center dp-mono small">Delivery Time (min)</h6>
+                <div style="height: 200px;"><canvas id="deliveryDistChart"></canvas></div>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-muted text-center dp-mono small">Distance (km)</h6>
+                <div style="height: 200px;"><canvas id="distanceChart"></canvas></div>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-muted text-center dp-mono small">Prep Time (min)</h6>
+                <div style="height: 200px;"><canvas id="prepChart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm p-4">
+        <h5 class="dp-section-title">
+            <i class="bi bi-table" style="color: var(--dp-accent);"></i>
+            Sample Data (First 20 Rows)
+        </h5>
+        <div class="table-responsive mt-3 dp-console-table">
+            {{ sample | safe }}
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ============================ PERFORMANCE ============================ -->
+<div id="panel-performance" class="dp-tab-panel">
+<div class="container mb-5">
+    <span class="dp-eyebrow-light">Evaluation</span>
+    <h4 class="dp-section-title mb-4"><i class="bi bi-graph-up"></i> Model Performance</h4>
+
+    <div class="dp-ticket shadow-sm mb-4" style="border-left-color: var(--dp-low);">
+        <div class="dp-ticket-label"><i class="bi bi-trophy-fill"></i> Best Model</div>
+        <div class="dp-section-title h5 mb-3" style="color: var(--dp-text);">
+            LightGBM (Tuned — Optuna CV)
+        </div>
+        <div class="row dp-mono">
+            <div class="col-4">
+                <div style="color: var(--dp-muted); font-size:.65rem; letter-spacing:.08em; text-transform:uppercase;">Test MAE</div>
+                <div class="fs-5" style="color: var(--dp-text);">3.0418 min</div>
+            </div>
+            <div class="col-4">
+                <div style="color: var(--dp-muted); font-size:.65rem; letter-spacing:.08em; text-transform:uppercase;">Test RMSE</div>
+                <div class="fs-5" style="color: var(--dp-text);">3.7771 min</div>
+            </div>
+            <div class="col-4">
+                <div style="color: var(--dp-muted); font-size:.65rem; letter-spacing:.08em; text-transform:uppercase;">Test R²</div>
+                <div class="fs-5" style="color: var(--dp-text);">0.8393</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header" style="background: var(--dp-ink); color: var(--dp-text); border: none;">
+            <span class="dp-section-title"><i class="bi bi-bar-chart-line"></i> All Models — Baseline vs Tuned</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive dp-console-table">
+                <table class="table table-hover table-bordered mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th><th>Model</th><th>Test MAE</th><th>Test RMSE</th>
+                            <th>Test R²</th><th>Train R²</th><th>Gap</th><th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="dp-row-best">
+                            <td>1</td><td><strong>⭐ LightGBM (Tuned - Optuna CV)</strong></td>
+                            <td>3.0418</td><td>3.7771</td><td>0.8393</td><td>0.8516</td><td>0.0123</td>
+                            <td><span class="dp-chip low">Good fit</span></td>
+                        </tr>
+                        <tr>
+                            <td>2</td><td>XGBoost (Tuned - RandomizedSearchCV)</td>
+                            <td>3.0353</td><td>3.7771</td><td>0.8393</td><td>0.8896</td><td>0.0503</td>
+                            <td><span class="dp-chip medium">Borderline</span></td>
+                        </tr>
+                        <tr>
+                            <td>3</td><td>Random Forest (Tuned - RandomizedSearchCV)</td>
+                            <td>3.0351</td><td>3.7808</td><td>0.8390</td><td>0.9017</td><td>0.0627</td>
+                            <td><span class="dp-chip medium">Borderline</span></td>
+                        </tr>
+                        <tr>
+                            <td>4</td><td>XGBoost (Tuned - Optuna CV)</td>
+                            <td>3.0461</td><td>3.7851</td><td>0.8386</td><td>0.8612</td><td>0.0226</td>
+                            <td><span class="dp-chip low">Good fit</span></td>
+                        </tr>
+                        <tr>
+                            <td>5</td><td>XGBoost (Tuned - Optuna + Pruning)</td>
+                            <td>3.0395</td><td>3.7857</td><td>0.8386</td><td>0.8955</td><td>0.0569</td>
+                            <td><span class="dp-chip medium">Borderline</span></td>
+                        </tr>
+                        <tr>
+                            <td>6</td><td>Random Forest (Tuned - Optuna)</td>
+                            <td>3.0377</td><td>3.7886</td><td>0.8384</td><td>0.9121</td><td>0.0737</td>
+                            <td><span class="dp-chip medium">Borderline</span></td>
+                        </tr>
+                        <tr>
+                            <td>7</td><td>LightGBM (Tuned - RandomizedSearchCV)</td>
+                            <td>3.0624</td><td>3.8089</td><td>0.8366</td><td>0.8789</td><td>0.0423</td>
+                            <td><span class="dp-chip low">Good fit</span></td>
+                        </tr>
+                        <tr>
+                            <td>8</td><td>LightGBM (Baseline)</td>
+                            <td>3.0836</td><td>3.8295</td><td>0.8348</td><td>0.8558</td><td>0.0210</td>
+                            <td><span class="dp-chip low">Good fit</span></td>
+                        </tr>
+                        <tr>
+                            <td>9</td><td>Random Forest (Baseline)</td>
+                            <td>3.0741</td><td>3.8474</td><td>0.8333</td><td>0.9756</td><td>0.1423</td>
+                            <td><span class="dp-chip jam">Overfit</span></td>
+                        </tr>
+                        <tr>
+                            <td>10</td><td>XGBoost (Baseline)</td>
+                            <td>3.0878</td><td>3.8526</td><td>0.8328</td><td>0.8716</td><td>0.0388</td>
+                            <td><span class="dp-chip low">Good fit</span></td>
+                        </tr>
+                        <tr>
+                            <td>11</td><td>Decision Tree (Tuned - GridSearchCV)</td>
+                            <td>3.3277</td><td>4.2292</td><td>0.7986</td><td>0.8900</td><td>0.0914</td>
+                            <td><span class="dp-chip medium">Borderline</span></td>
+                        </tr>
+                        <tr>
+                            <td>12</td><td>Decision Tree (Baseline)</td>
+                            <td>4.0257</td><td>5.2547</td><td>0.6890</td><td>1.0000</td><td>0.3110</td>
+                            <td><span class="dp-chip jam">Overfit</span></td>
+                        </tr>
+                        <tr>
+                            <td>13</td><td>Linear Regression (Baseline)</td>
+                            <td>4.7470</td><td>5.9342</td><td>0.6034</td><td>0.5983</td><td>-0.0051</td>
+                            <td><span class="dp-chip low">Good fit</span></td>
+                        </tr>
+                        <tr>
+                            <td>14</td><td>Linear Regression (Tuned - Ridge)</td>
+                            <td>4.7504</td><td>5.9377</td><td>0.6029</td><td>0.5977</td><td>-0.0048</td>
+                            <td><span class="dp-chip low">Good fit</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="dp-feature-card">
+                <div class="dp-feature-icon"><i class="bi bi-bullseye"></i></div>
+                <span class="dp-spec">3.7771 min</span>
+                <h6 class="dp-section-title">What is RMSE?</h6>
+                <p class="text-muted small mb-0">
+                    Root Mean Square Error — measures average prediction error in minutes.
+                    Lower is better. This model's predictions are off by about 3.78 minutes on average.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dp-feature-card">
+                <div class="dp-feature-icon"><i class="bi bi-percent"></i></div>
+                <span class="dp-spec">0.8393</span>
+                <h6 class="dp-section-title">What is R²?</h6>
+                <p class="text-muted small mb-0">
+                    R-squared — measures how much variance the model explains.
+                    Higher is better (max 1.0). This model explains 83.93% of delivery time variation.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dp-feature-card">
+                <div class="dp-feature-icon"><i class="bi bi-bar-chart"></i></div>
+                <span class="dp-spec">3.0418 min</span>
+                <h6 class="dp-section-title">What is MAE?</h6>
+                <p class="text-muted small mb-0">
+                    Mean Absolute Error — average absolute difference between predicted and actual.
+                    Lower is better. On average, the model is about 3 minutes off.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm p-4 mt-4 mb-4">
+        <h5 class="dp-section-title mb-3">
+            <i class="bi bi-clipboard-data" style="color: var(--dp-accent);"></i>
+            Cross-Validation Results (5-Fold CV on Training Data)
+        </h5>
+        <p class="text-muted small mb-3">
+            All models were tuned using 5-fold cross-validation on training data only.
+            CV RMSE measures how well each model generalises across different subsets of training data.
+        </p>
+        <div class="table-responsive dp-console-table">
+            <table class="table table-bordered table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th><th>Model</th><th>Search Method</th><th>CV Folds</th>
+                        <th>Trials</th><th>Best CV RMSE</th><th>Best Tuning RMSE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="dp-row-best">
+                        <td>1</td><td><strong>⭐ LightGBM (Optuna CV)</strong></td>
+                        <td><span class="dp-chip low">Optuna (Bayesian)</span></td>
+                        <td>5</td><td>100</td><td><strong>3.8351</strong></td><td class="text-muted">—</td>
+                    </tr>
+                    <tr>
+                        <td>2</td><td>Random Forest (Optuna)</td>
+                        <td><span class="dp-chip low">Optuna (Bayesian)</span></td>
+                        <td>5</td><td>30</td><td>3.8594</td><td class="text-muted">—</td>
+                    </tr>
+                    <tr>
+                        <td>3</td><td>XGBoost (Optuna CV)</td>
+                        <td><span class="dp-chip low">Optuna (Bayesian)</span></td>
+                        <td>5</td><td>100</td><td>3.8632</td><td class="text-muted">—</td>
+                    </tr>
+                    <tr>
+                        <td>4</td><td>Random Forest (RandomizedSearchCV)</td>
+                        <td><span class="dp-chip blue">RandomizedSearchCV</span></td>
+                        <td>5</td><td>50</td><td>3.8651</td><td class="text-muted">—</td>
+                    </tr>
+                    <tr>
+                        <td>5</td><td>XGBoost (RandomizedSearchCV)</td>
+                        <td><span class="dp-chip blue">RandomizedSearchCV</span></td>
+                        <td>5</td><td>50</td><td>3.8660</td><td class="text-muted">—</td>
+                    </tr>
+                    <tr>
+                        <td>6</td><td>LightGBM (RandomizedSearchCV)</td>
+                        <td><span class="dp-chip blue">RandomizedSearchCV</span></td>
+                        <td>5</td><td>50</td><td>3.8943</td><td class="text-muted">—</td>
+                    </tr>
+                    <tr>
+                        <td>7</td><td>Decision Tree</td>
+                        <td><span class="dp-chip high">GridSearchCV</span></td>
+                        <td>5</td><td>Exhaustive</td><td>4.2687</td><td class="text-muted">—</td>
+                    </tr>
+                    <tr>
+                        <td>8</td><td>Ridge (Linear Regression)</td>
+                        <td><span class="dp-chip high">GridSearchCV</span></td>
+                        <td>5</td><td>Exhaustive</td><td>5.9641</td><td class="text-muted">—</td>
+                    </tr>
+                    <tr>
+                        <td>9</td><td>XGBoost (Optuna + Pruning)</td>
+                        <td><span class="dp-chip medium">Optuna + MedianPruner</span></td>
+                        <td>Internal 80/20</td><td>50</td><td class="text-muted">—</td><td>3.8993</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="text-muted small mt-2">
+            <strong>Note:</strong> XGBoost (Optuna + Pruning) uses an internal 80/20 validation split
+            instead of 5-fold CV, so Best Tuning RMSE is reported instead of CV RMSE.
+        </p>
+
+        <div class="row g-4 mt-2">
+            <div class="col-md-4">
+                <div class="dp-insight h-100" style="border-left-color: var(--dp-low);">
+                    <div class="dp-insight-title">What is CV RMSE?</div>
+                    <p>Average RMSE across 5 validation folds during tuning. Lower means better generalisation.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dp-insight h-100" style="border-left-color: #5B8DEF;">
+                    <div class="dp-insight-title">Why 5-fold CV?</div>
+                    <p>Uses all training data for validation while preventing overfitting to any single split.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dp-insight h-100" style="border-left-color: var(--dp-medium);">
+                    <div class="dp-insight-title">CV vs Test RMSE</div>
+                    <p>CV RMSE comes from training data only. Test RMSE is the final honest evaluation on unseen data.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm p-4">
+        <h5 class="dp-section-title mb-3">
+            <i class="bi bi-bar-chart" style="color: var(--dp-accent);"></i>
+            Model Comparison — Test RMSE (lower is better)
+        </h5>
+        <div style="height: 320px;"><canvas id="rmseChart"></canvas></div>
+    </div>
+</div>
+</div>
+
+<!-- ============================ FEATURES ============================ -->
+<div id="panel-features" class="dp-tab-panel">
+<div class="container mb-5">
+    <span class="dp-eyebrow-light">Model Explainability</span>
+    <h4 class="dp-section-title mb-2">
+        <i class="bi bi-bar-chart"></i> Feature Importance &amp; Explainability
+    </h4>
+    <p class="text-muted mb-4">
+        Feature importance computed using two methods:
+        <strong>SHAP (LightGBM)</strong> and <strong>Random Forest Importance</strong>.
+        Both methods are compared to confirm reliability of findings.
+    </p>
+
+    {% if use_shap %}
+    <div class="dp-insight mb-4" style="border-left-color: #5B8DEF;">
+        <div class="dp-insight-title"><i class="bi bi-info-circle-fill"></i> What is SHAP?</div>
+        <p>SHAP values measure the average contribution of each feature to the model's prediction
+            across all training samples. Higher SHAP value = stronger impact on delivery time prediction.</p>
+    </div>
+    {% endif %}
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm p-4">
+                <h5 class="dp-section-title mb-1">
+                    <i class="bi bi-bar-chart" style="color: var(--dp-accent);"></i>
+                    SHAP Feature Importance — LightGBM
+                </h5>
+                <p class="text-muted small mb-3">Mean absolute SHAP values computed on 500 training samples.</p>
+                <div style="height: 400px;"><canvas id="featureChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-4 mb-4">
+                <h6 class="dp-section-title fw-bold mb-3">
+                    <i class="bi bi-search" style="color: var(--dp-accent);"></i> SHAP Key Findings
+                </h6>
+                <ul class="dp-finding-list">
+                    <li><span class="dp-finding-rank">01</span>
+                        <span><strong>delivery_person_ratings</strong> — rider rating has the strongest impact; higher-rated riders deliver faster.</span></li>
+                    <li><span class="dp-finding-rank">02</span>
+                        <span><strong>delivery_person_age</strong> — rider age significantly influences delivery speed.</span></li>
+                    <li><span class="dp-finding-rank">03</span>
+                        <span><strong>road_traffic_density_Low</strong> — low traffic strongly reduces delivery time.</span></li>
+                    <li><span class="dp-finding-rank">04</span>
+                        <span><strong>distance_km</strong> — longer distances directly increase delivery time.</span></li>
+                    <li><span class="dp-finding-rank">05</span>
+                        <span><strong>vehicle_condition</strong> — vehicle condition affects rider reliability.</span></li>
+                </ul>
+            </div>
+
+            <div class="dp-feature-card h-auto">
+                <div class="dp-feature-icon"><i class="bi bi-info-circle"></i></div>
+                <span class="dp-spec">Game-theory based</span>
+                <h6 class="dp-section-title">About SHAP</h6>
+                <p class="small text-muted mb-2">
+                    SHAP (SHapley Additive exPlanations) is a game-theory based method for explaining ML predictions.
+                </p>
+                <p class="small text-muted mb-2">
+                    Unlike basic feature importance, SHAP accounts for feature interactions and gives
+                    mathematically rigorous explanations.
+                </p>
+                <p class="small text-muted mb-0">
+                    Values are mean absolute SHAP values — direction of impact is ignored, only magnitude is shown.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {% if use_rf %}
+    <div class="row g-4 mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm p-4">
+                <h5 class="dp-section-title mb-1">
+                    <i class="bi bi-tree" style="color: var(--dp-low);"></i>
+                    Random Forest Feature Importance
+                </h5>
+                <p class="text-muted small mb-3">
+                    Gini impurity-based importance from Random Forest (Tuned - RandomizedSearchCV).
+                </p>
+                <div style="height: 400px;"><canvas id="rfChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm p-4 mb-4">
+                <h6 class="dp-section-title fw-bold mb-3">
+                    <i class="bi bi-search" style="color: var(--dp-low);"></i> RF Key Findings
+                </h6>
+                <ul class="dp-finding-list">
+                    <li><span class="dp-finding-rank">01</span>
+                        <span><strong>delivery_person_ratings</strong> — ranked #1 by RF, confirming rider quality is the strongest predictor.</span></li>
+                    <li><span class="dp-finding-rank">02</span>
+                        <span><strong>road_traffic_density_Low</strong> — low traffic conditions strongly influence delivery time in both methods.</span></li>
+                    <li><span class="dp-finding-rank">03</span>
+                        <span><strong>distance_km</strong> — consistently ranked top 3 in both SHAP and RF.</span></li>
+                    <li><span class="dp-finding-rank">04</span>
+                        <span><strong>delivery_person_age</strong> — ranked top 4 in both methods confirming rider demographics matter.</span></li>
+                    <li><span class="dp-finding-rank">05</span>
+                        <span><strong>multiple_deliveries</strong> — handling multiple orders simultaneously increases time.</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if use_rf %}
+    <div class="card shadow-sm p-4 mb-4">
+        <h5 class="dp-section-title mb-3">
+            <i class="bi bi-arrow-left-right" style="color: var(--dp-low);"></i>
+            SHAP vs RF — Top 5 Comparison
+        </h5>
+        <div class="table-responsive dp-console-table">
+            <table class="table table-sm table-bordered mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th>SHAP (LightGBM)</th>
+                        <th>Random Forest</th>
+                    </tr>
+                </thead>
+                <tbody id="comparison-tbody">
+                    <tr><td>1</td><td id="shap1">—</td><td id="rf1">—</td></tr>
+                    <tr><td>2</td><td id="shap2">—</td><td id="rf2">—</td></tr>
+                    <tr><td>3</td><td id="shap3">—</td><td id="rf3">—</td></tr>
+                    <tr><td>4</td><td id="shap4">—</td><td id="rf4">—</td></tr>
+                    <tr><td>5</td><td id="shap5">—</td><td id="rf5">—</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="small text-muted mt-2 mb-0">
+            Agreement between both methods confirms reliability of identified key factors.
+        </p>
+    </div>
+    {% endif %}
+
+    <div class="card shadow-sm p-4">
+        <h5 class="dp-section-title"><i class="bi bi-lightbulb" style="color: var(--dp-accent);"></i>
+            Combined Interpretability Findings
+        </h5>
+        <div class="row g-4 mt-1">
+            <div class="col-md-4">
+                <div class="dp-insight" style="border-left-color: var(--dp-jam);">
+                    <div class="dp-insight-title">🚦 Traffic Conditions</div>
+                    <p>Low traffic strongly reduces delivery time. Both SHAP and RF rank traffic density among the top features.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dp-insight" style="border-left-color: #5B8DEF;">
+                    <div class="dp-insight-title">👤 Rider Characteristics</div>
+                    <p>Rider ratings and age are consistently ranked top features in both methods, showing rider quality significantly impacts delivery time.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dp-insight" style="border-left-color: var(--dp-low);">
+                    <div class="dp-insight-title">📍 Distance</div>
+                    <p>Distance is ranked top 3–4 in both SHAP and RF, confirming physical distance is a primary driver of delivery duration.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// ── Tab controller with lazy chart init + hash deep-linking ──────────
+(function () {
+    const VALID = ['dashboard', 'dataset', 'performance', 'features'];
+    const inits = {
+        dashboard:   initDashboard,
+        dataset:     initDataset,
+        performance: initPerformance,
+        features:    initFeatures
+    };
+    const done = {};
+
+    function activate(name) {
+        if (!VALID.includes(name)) name = 'dashboard';
+        document.querySelectorAll('.dp-tab').forEach(t =>
+            t.classList.toggle('active', t.dataset.tab === name));
+        document.querySelectorAll('.dp-tab-panel').forEach(p =>
+            p.classList.toggle('active', p.id === 'panel-' + name));
+        // panel is now visible → safe for Chart.js to measure the canvas
+        if (!done[name]) { done[name] = true; try { inits[name](); } catch (e) { console.error(e); } }
+        if (history.replaceState) history.replaceState(null, '', '#' + name);
+        else location.hash = name;
+    }
+
+    document.querySelectorAll('.dp-tab').forEach(t =>
+        t.addEventListener('click', () => activate(t.dataset.tab)));
+
+    let start = (location.hash || '').replace('#', '');
+    activate(VALID.includes(start) ? start : 'dashboard');
+})();
+
+// ── DASHBOARD ────────────────────────────────────────────────────────
+function initDashboard() {
+    const trafficData  = {{ traffic_data  | safe }};
+    const weatherData  = {{ weather_data  | safe }};
+    const cityData     = {{ city_data     | safe }};
+    const festivalData = {{ festival_data | safe }};
+    const hourData     = {{ hour_data     | safe }};
+    const dayData      = {{ day_data      | safe }};
+    const multiData    = {{ multi_data    | safe }};
+    const delayDist    = {{ delay_dist    | safe }};
+
+    const sev = {
+        low: '#3ECF8E', medium: '#FFC857', high: '#FF9F5A', jam: '#FF5C5C',
+        blue: '#5B8DEF', accent: '#FF6B4A', muted: '#7E8CA0'
+    };
+    const barColors   = [sev.blue, sev.low, sev.medium, sev.jam, sev.accent, sev.muted];
+    const doughColors = [sev.low, sev.medium, sev.jam];
+    const charts = {};
+
+    function makeBar(id, data, customColors) {
+        if (charts[id]) charts[id].destroy();
+        charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
+            type: 'bar',
+            data: { labels: data.labels, datasets: [{
+                data: data.values, backgroundColor: customColors || barColors, borderRadius: 5 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, title: { display: true, text: 'Avg Time (min)' } } }
+            }
+        });
+    }
+    function makeDoughnut(id, data) {
+        if (charts[id]) charts[id].destroy();
+        charts[id] = new Chart(document.getElementById(id).getContext('2d'), {
+            type: 'doughnut',
+            data: { labels: data.labels, datasets: [{
+                data: data.values, backgroundColor: doughColors, borderWidth: 2 }] },
+            options: { responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    makeDoughnut('delayDistChart', delayDist);
+    makeBar('trafficChart', trafficData, [sev.low, sev.medium, sev.high, sev.jam]);
+    makeBar('weatherChart', weatherData, [sev.jam, sev.high, sev.medium, sev.blue, sev.low, sev.muted]);
+    makeBar('festivalChart', festivalData, [sev.low, sev.jam]);
+    makeBar('cityChart', cityData, [sev.accent, sev.blue, sev.low]);
+    makeBar('multiChart', multiData, [sev.low, sev.medium, sev.high, sev.jam, sev.jam]);
+
+    const hourColors = hourData.labels.map(h => {
+        const n = parseInt(h);
+        if (n >= 8 && n <= 11) return sev.medium;
+        if (n >= 17 && n <= 23) return sev.jam;
+        return sev.low;
+    });
+    makeBar('hourChart', hourData, hourColors);
+
+    const dayColors = dayData.labels.map(d =>
+        (d === 'Saturday' || d === 'Sunday') ? sev.jam : sev.blue);
+    makeBar('dayChart', dayData, dayColors);
+
+    function filterData(originalData, value) {
+        if (value === 'all') return originalData;
+        const idx = originalData.labels.indexOf(value);
+        if (idx === -1) return originalData;
+        return { labels: [originalData.labels[idx]], values: [originalData.values[idx]] };
+    }
+
+    function applyFilters() {
+        const city     = document.getElementById('filterCity').value;
+        const traffic  = document.getElementById('filterTraffic').value;
+        const weather  = document.getElementById('filterWeather').value;
+        const festival = document.getElementById('filterFestival').value;
+        const festLabel = festival === 'Yes' ? 'Festival' :
+                          festival === 'No'  ? 'Non-Festival' : 'all';
+
+        makeBar('trafficChart', filterData(trafficData, traffic),
+            traffic === 'all' ? [sev.low, sev.medium, sev.high, sev.jam] : undefined);
+        makeBar('weatherChart', filterData(weatherData, weather),
+            weather === 'all' ? [sev.jam, sev.high, sev.medium, sev.blue, sev.low, sev.muted] : undefined);
+        makeBar('cityChart', filterData(cityData, city),
+            city === 'all' ? [sev.accent, sev.blue, sev.low] : undefined);
+        makeBar('festivalChart', filterData(festivalData, festLabel),
+            festLabel === 'all' ? [sev.low, sev.jam] : undefined);
+
+        const isFiltered = city !== 'all' || traffic !== 'all' || weather !== 'all' || festival !== 'all';
+        document.getElementById('filterCount').textContent =
+            isFiltered ? 'Filtered' : '{{ dashboard_stats.total }} rows';
+    }
+    function resetFilters() {
+        document.getElementById('filterCity').value     = 'all';
+        document.getElementById('filterTraffic').value  = 'all';
+        document.getElementById('filterWeather').value  = 'all';
+        document.getElementById('filterFestival').value = 'all';
+        applyFilters();
+    }
+    // expose for the inline onchange / onclick handlers in this panel
+    window.applyFilters = applyFilters;
+    window.resetFilters = resetFilters;
+}
+
+// ── DATASET ──────────────────────────────────────────────────────────
+function initDataset() {
+    const sev = { low: '#3ECF8E', medium: '#FFC857', high: '#FF9F5A',
+                  jam: '#FF5C5C', blue: '#5B8DEF', accent: '#FF6B4A' };
+
+    function makeHist(id, labels, data, colors, xLabel) {
+        new Chart(document.getElementById(id).getContext('2d'), {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderRadius: 4 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { title: { display: true, text: 'Count' } },
+                    x: xLabel ? { title: { display: true, text: xLabel } } : {}
+                }
+            }
+        });
+    }
+
+    makeHist('deliveryChart',
+        ['10-15','16-20','21-25','26-30','31-35','36-40','41-45','46-54'],
+        [2100, 6800, 9200, 8900, 7400, 4200, 2800, 1200],
+        [sev.low, sev.low, sev.medium, sev.medium, sev.high, sev.high, sev.jam, sev.jam],
+        'Delivery Time Range (min)');
+
+    makeHist('deliveryDistChart',
+        ['10–15','16–20','21–25','26–30','31–35','36–40','41–45','46–54'],
+        [2100, 6800, 9200, 8900, 7400, 4200, 2800, 1200],
+        [sev.low, sev.low, sev.medium, sev.medium, sev.high, sev.high, sev.jam, sev.jam]);
+
+    makeHist('distanceChart',
+        ['0–3','3–6','6–9','9–12','12–15','15–18','18+'],
+        [3200, 8400, 9100, 7800, 5600, 3200, 1800], sev.blue);
+
+    makeHist('prepChart',
+        ['5 min','10 min','15 min'],
+        [14200, 15600, 12800], sev.accent);
+}
+
+// ── PERFORMANCE ──────────────────────────────────────────────────────
+function initPerformance() {
+    const sev = { low: '#3ECF8E', medium: '#FFC857', high: '#FF9F5A',
+                  jam: '#FF5C5C', muted: '#7E8CA0' };
+
+    new Chart(document.getElementById('rmseChart'), {
+        type: 'bar',
+        data: {
+            labels: [
+                'LightGBM (Optuna CV)', 'XGBoost (Tuned-Rand)', 'RF (Tuned-Rand)',
+                'XGBoost (Optuna CV)', 'XGBoost (Optuna+Prune)', 'RF (Optuna)',
+                'LightGBM (Tuned-Rand)', 'LightGBM (Baseline)', 'RF (Baseline)',
+                'XGBoost (Baseline)', 'DT (Tuned)', 'DT (Baseline)',
+                'LR (Baseline)', 'LR (Ridge)'
+            ],
+            datasets: [{
+                label: 'Test RMSE (min)',
+                data: [3.7771, 3.7771, 3.7808, 3.7851, 3.7857, 3.7886, 3.8089,
+                       3.8295, 3.8474, 3.8526, 4.2292, 5.2547, 5.9342, 5.9377],
+                backgroundColor: [
+                    sev.low, sev.low, sev.low, sev.low, sev.low, sev.low,
+                    sev.medium, sev.medium, sev.medium, sev.medium,
+                    sev.high, sev.jam, sev.muted, sev.muted
+                ],
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => ' RMSE: ' + ctx.raw + ' min' } }
+            },
+            scales: { y: { beginAtZero: false, min: 3.5,
+                title: { display: true, text: 'Test RMSE (minutes)' } } }
+        }
+    });
+}
+
+// ── FEATURES ─────────────────────────────────────────────────────────
+function initFeatures() {
+    const shapData = {{ shap_data | safe }};
+    const rfData   = {{ rf_data   | safe }};
+    const sev = { accent: '#FF6B4A', blue: '#5B8DEF', low: '#3ECF8E', muted: '#7E8CA0' };
+
+    new Chart(document.getElementById('featureChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: shapData.features,
+            datasets: [{
+                label: 'Mean |SHAP Value|',
+                data: shapData.values,
+                backgroundColor: shapData.values.map((s, i) =>
+                    i === 0 ? sev.accent : i < 3 ? sev.blue : i < 8 ? sev.low : sev.muted),
+                borderRadius: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => ' SHAP: ' + ctx.raw.toFixed(4) } }
+            },
+            scales: { x: { beginAtZero: true, title: { display: true, text: 'Mean |SHAP Value|' } } }
+        }
+    });
+
+    {% if use_rf %}
+    new Chart(document.getElementById('rfChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: rfData.features,
+            datasets: [{
+                label: 'RF Importance Score',
+                data: rfData.values,
+                backgroundColor: rfData.values.map((s, i) =>
+                    i === 0 ? sev.accent : i < 3 ? sev.low : i < 8 ? sev.blue : sev.muted),
+                borderRadius: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => ' Score: ' + ctx.raw.toFixed(4) } }
+            },
+            scales: { x: { beginAtZero: true, title: { display: true, text: 'Importance Score' } } }
+        }
+    });
+
+    function shortName(name) {
+        return name
+            .replace(/_/g, ' ')
+            .replace('road traffic density Low', 'Traffic (Low)')
+            .replace('delivery person ratings', 'Rider Ratings')
+            .replace('delivery person age', 'Rider Age')
+            .replace('distance km', 'Distance')
+            .replace('vehicle condition', 'Vehicle Condition')
+            .replace('multiple deliveries', 'Multiple Deliveries');
+    }
+    for (let i = 1; i <= 5; i++) {
+        const shapEl = document.getElementById('shap' + i);
+        const rfEl   = document.getElementById('rf' + i);
+        if (shapEl && shapData.features[i-1]) shapEl.textContent = shortName(shapData.features[i-1]);
+        if (rfEl   && rfData.features[i-1])   rfEl.textContent   = shortName(rfData.features[i-1]);
+    }
+    {% endif %}
+}
+</script>
+{% endblock %}

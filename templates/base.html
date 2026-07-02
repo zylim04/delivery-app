@@ -235,7 +235,7 @@
         color: var(--dp-soft);
     }
 
-    </style>
+</style>
 </head>
 <body>
 
@@ -263,24 +263,12 @@
                        href="/map"><i class="bi bi-map"></i> Map</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}"
-                       href="/dashboard"><i class="bi bi-bar-chart-line"></i> Dashboard</a>
+                    <a class="nav-link {% if request.path == '/insights' %}active{% endif %}"
+                       href="/insights"><i class="bi bi-clipboard-data"></i> Insights</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == '/chatbot' %}active{% endif %}"
                        href="/chatbot"><i class="bi bi-robot"></i> AI Assistant</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.path == '/dataset' %}active{% endif %}"
-                       href="/dataset"><i class="bi bi-folder2-open"></i> Dataset</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.path == '/performance' %}active{% endif %}"
-                       href="/performance"><i class="bi bi-graph-up"></i> Performance</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.path == '/features' %}active{% endif %}"
-                       href="/features"><i class="bi bi-bar-chart"></i> Features</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.path == '/about' %}active{% endif %}"
