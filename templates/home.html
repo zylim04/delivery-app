@@ -418,15 +418,28 @@ new Chart(document.getElementById('trafficChart'), {
 });
 
 // ── Live ETA ticket cycling ────────────────────────────────────────
-const dpScenarios = [
-    { chip: 'low',    label: 'Low Traffic',    eta: 18, conditions: 'Distance 3.2 km · Sunny' },
-    { chip: 'jam',    label: 'Jam Traffic',    eta: 42, conditions: 'Distance 11.8 km · Stormy' },
-    { chip: 'medium', label: 'Medium Traffic', eta: 35, conditions: 'Distance 7.5 km · Cloudy · Festival' }
+// Fallback values shown until real predictions load from the model
+let dpScenarios = [
+    { chip: 'low',    label: 'Low Traffic',    eta: '–', conditions: 'Distance 3.2 km · Sunny' },
+    { chip: 'jam',    label: 'Jam Traffic',    eta: '–', conditions: 'Distance 11.8 km · Stormy' },
+    { chip: 'medium', label: 'Medium Traffic', eta: '–', conditions: 'Distance 7.5 km · Cloudy · Festival' }
 ];
 
 const dpReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let dpIndex = 0;
+
+// Fetch REAL predictions from the LightGBM model on page load
+fetch('/api/preview-predictions')
+    .then(res => res.json())
+    .then(data => {
+        if (data.success && data.scenarios.length) {
+            dpScenarios = data.scenarios;   // replace with real model output
+            dpRender(dpScenarios[dpIndex]); // show the first one immediately
+        }
+    })
+    .catch(err => console.log('Preview prediction error:', err));
+    
 function dpRender(s) {
     const chip  = document.getElementById('dpChip');
     const line  = document.getElementById('dpLine');

@@ -442,6 +442,88 @@ def predict():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
+
+# ── Shared prediction helper (used by /api/predict-style calls) ──
+def run_prediction(data):
+    input_df = pd.DataFrame([{
+        'delivery_person_age'         : float(data.get('delivery_person_age', 28)),
+        'delivery_person_ratings'     : float(data.get('delivery_person_ratings', 4.5)),
+        'restaurant_latitude'         : float(data.get('restaurant_latitude', 26.5)),
+        'restaurant_longitude'        : float(data.get('restaurant_longitude', 80.3)),
+        'delivery_location_latitude'  : float(data.get('delivery_location_latitude', 26.6)),
+        'delivery_location_longitude' : float(data.get('delivery_location_longitude', 80.4)),
+        'weather_conditions'          : str(data.get('weather_conditions', 'Sunny')),
+        'road_traffic_density'        : str(data.get('road_traffic_density', 'Medium')),
+        'vehicle_condition'           : int(data.get('vehicle_condition', 1)),
+        'type_of_order'               : str(data.get('type_of_order', 'Meal')),
+        'type_of_vehicle'             : str(data.get('type_of_vehicle', 'motorcycle')),
+        'multiple_deliveries'         : float(data.get('multiple_deliveries', 0)),
+        'festival'                    : str(data.get('festival', 'No')),
+        'city'                        : str(data.get('city', 'Metropolitian')),
+        'prep_time_min'               : float(data.get('prep_time_min', 10)),
+        'order_hour'                  : int(data.get('order_hour', 12)),
+        'day_of_week'                 : int(data.get('day_of_week', 1)),
+        'is_weekend'                  : int(data.get('is_weekend', 0)),
+        'peak_hour'                   : str(data.get('peak_hour', 'Off-Peak')),
+        'distance_km'                 : float(data.get('distance_km', 5.0))
+    }])
+    X_processed = preprocessor.transform(input_df)
+    X_hybrid    = X_processed[:, selected_indices]
+    return round(float(model.predict(X_hybrid)[0]), 1)
+
+
+
+@app.route('/api/preview-predictions')
+def preview_predictions():
+    try:
+        scenarios = [
+            {
+                'chip'      : 'low',
+                'label'     : 'Low Traffic',
+                'conditions': 'Distance 3.2 km · Sunny',
+                'inputs'    : {
+                    'road_traffic_density': 'Low', 'weather_conditions': 'Sunny',
+                    'distance_km': 3.2, 'festival': 'No', 'order_hour': 13,
+                    'peak_hour': 'Off-Peak', 'multiple_deliveries': 0
+                }
+            },
+            {
+                'chip'      : 'jam',
+                'label'     : 'Jam Traffic',
+                'conditions': 'Distance 11.8 km · Stormy',
+                'inputs'    : {
+                    'road_traffic_density': 'Jam', 'weather_conditions': 'Stormy',
+                    'distance_km': 11.8, 'festival': 'No', 'order_hour': 20,
+                    'peak_hour': 'Evening Peak', 'multiple_deliveries': 2
+                }
+            },
+            {
+                'chip'      : 'medium',
+                'label'     : 'Medium Traffic',
+                'conditions': 'Distance 7.5 km · Cloudy · Festival',
+                'inputs'    : {
+                    'road_traffic_density': 'Medium', 'weather_conditions': 'Cloudy',
+                    'distance_km': 7.5, 'festival': 'Yes', 'order_hour': 19,
+                    'peak_hour': 'Evening Peak', 'multiple_deliveries': 1
+                }
+            },
+        ]
+
+        results = []
+        for s in scenarios:
+            eta = run_prediction(s['inputs'])
+            results.append({
+                'chip'      : s['chip'],
+                'label'     : s['label'],
+                'eta'       : round(eta),
+                'conditions': s['conditions']
+            })
+
+        return jsonify({'success': True, 'scenarios': results})
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
       
 @app.route('/api/similar-cases', methods=['POST'])
 def similar_cases():
