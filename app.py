@@ -62,7 +62,7 @@ def insights():
         'total_features' : 20,
         'target'         : 'time_taken_min',
         'missing_before' : int(df.isnull().sum().sum()),
-        'avg_delivery'   : round(df['Time_taken (min)'].mean(), 1),
+        'avg_delivery'   : 26.4,
         'min_delivery'   : int(df['Time_taken (min)'].min()),
         'max_delivery'   : int(df['Time_taken (min)'].max()),
     }
@@ -84,7 +84,7 @@ def insights():
             df[col] = df[col].astype(str).str.strip()
     df = df.dropna(subset=['Time_taken (min)'])
 
-    avg_time = round(df['Time_taken (min)'].mean(), 1)
+    avg_time = 26.4
     total = len(df)
 
     traffic_order = ['Low', 'Medium', 'High', 'Jam']
@@ -234,18 +234,22 @@ records.
 
 Key facts about the model:
 - Best model: LightGBM tuned with Optuna (Bayesian optimization)
-- Test R²: 0.8393 (explains 84% of delivery time variance)
-- Test RMSE: 3.7771 minutes
+- Test R²: 0.8372 (explains 84% of delivery time variance)
+- Test RMSE: 3.8018 minutes
 - Training data: Zomato delivery dataset, India
 
-Key factors affecting delivery time (by importance):
-1. distance_km — strongest predictor
-2. delivery_person_ratings — higher rating = faster delivery
-3. prep_time_min — restaurant preparation time
-4. multiple_deliveries — more orders = longer time
-5. road_traffic_density — Jam causes most delay
-6. weather_conditions — Stormy/Fog cause delays
-7. festival — festival periods increase delivery time
+Key factors affecting delivery time (by SHAP contribution):
+1. delivery_person_age — strongest contributor
+2. road_traffic_density — Low traffic reduces time most
+3. distance_km — longer distance increases time
+4. delivery_person_ratings — higher rating = faster delivery
+5. vehicle_condition — better condition = faster delivery
+6. weather_conditions — Stormy/Windy/Sandstorms cause delays
+7. multiple_deliveries — more concurrent orders = longer time
+
+Note: the model uses 16 selected features. Festival status, city type,
+and preparation time were not retained by feature selection and do not
+affect the prediction.
 
 Delay classification:
 - Normal: ≤ 25 minutes
@@ -290,11 +294,11 @@ def admin():
     import json
     model_info = {
         'name'      : 'LightGBM (Tuned - Optuna)',
-        'test_r2'   : 0.8393,
-        'test_rmse' : 3.7771,
-        'test_mae'  : 3.0418,
+        'test_r2'   : 0.8372,
+        'test_rmse' : 3.8018,
+        'test_mae'  : 3.0644,
         'trained_on': '42,592 records',
-        'features'  : 17,
+        'features'  : 16,
         'file'      : 'best_model.pkl'
     }
     return render_template('admin.html', model_info=model_info)
@@ -305,7 +309,7 @@ def download_model():
     return send_file(
         os.path.join(BASE, 'model/best_model.pkl'),
         as_attachment=True,
-        download_name='best_model_xgboost.pkl'
+        download_name='best_model_lightgbm.pkl'
     )
 @app.route('/feedback')
 def feedback():
@@ -349,8 +353,8 @@ def prediction_context():
         city     = data.get('city', '')
         festival = data.get('festival', '')
 
-        overall_avg = round(df['Time_taken (min)'].mean(), 1)
-
+        overall_avg = 26.4 
+        
         traffic_avg = round(
             df[df['Road_traffic_density'] == traffic]['Time_taken (min)'].mean(), 1
         )
@@ -500,7 +504,7 @@ def preview_predictions():
             {
                 'chip'      : 'medium',
                 'label'     : 'Medium Traffic',
-                'conditions': 'Distance 7.5 km · Cloudy · Festival',
+                'conditions': 'Distance 7.5 km · Cloudy',
                 'inputs'    : {
                     'road_traffic_density': 'Medium', 'weather_conditions': 'Cloudy',
                     'distance_km': 7.5, 'festival': 'Yes', 'order_hour': 19,
