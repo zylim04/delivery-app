@@ -162,8 +162,8 @@
                 <h5 class="dp-section-title"><i class="bi bi-file-text" style="color: var(--dp-accent);"></i> Project Overview</h5>
                 <p class="text-muted">This system predicts food delivery time using machine
                 learning. It was developed as a Final Year Project (FYP)
-                using a dataset of 42,592 real delivery records from
-                the Zomato platform.</p>
+                using a dataset of 42,592 cleaned records, of which 34,073 were used
+                to train the final model from the Zomato platform.</p>
                 <p class="text-muted mb-0">The system uses LightGBM, a gradient boosting ensemble
                 model tuned with Optuna Bayesian optimisation and 5-fold
                 cross-validation to achieve a Test R² of 0.8372 and
@@ -184,8 +184,8 @@
                         <span class="dp-finding-rank">02</span>
                         <span>To preprocess and analyse 
                         historical delivery data by
-                        handling missing values, removing structural
-                        errors, and engineering relevant features to
+                        handling missing values, parsing inconsistent date
+                        and time formats, and engineering relevant features to
                         produce a clean dataset. </span>
                     </li>
                     <li>
@@ -255,7 +255,7 @@
                     </li>
                     <li class="mb-2">
                         <span class="dp-chip low me-2">Tuning</span>
-                        RandomizedSearchCV, Optuna
+                        GridSearchCV, RandomizedSearchCV, Optuna
                     </li>
                     <li class="mb-2">
                         <span class="dp-chip blue me-2">Pipeline</span>

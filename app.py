@@ -196,9 +196,6 @@ def features():
     return redirect(url_for('insights') + '#features')
 
 
-
-
-
 # Redirect old /trends links to the merged dashboard
 @app.route('/trends')
 def trends():
@@ -229,7 +226,7 @@ def chat():
 
         context = """You are a delivery time prediction assistant.
 You help users understand food delivery time predictions made by an
-LightGBM machine learning model trained on 42,592 Indian food delivery
+LightGBM machine learning model trained on 34,073 Indian food delivery
 records.
 
 Key facts about the model:
@@ -297,7 +294,7 @@ def admin():
         'test_r2'   : 0.8372,
         'test_rmse' : 3.8018,
         'test_mae'  : 3.0644,
-        'trained_on': '42,592 records',
+        'trained_on': '34,073 records',
         'features'  : 16,
         'file'      : 'best_model.pkl'
     }
