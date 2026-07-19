@@ -751,8 +751,9 @@
                 <span class="dp-spec">3.8018 min</span>
                 <h6 class="dp-section-title">What is RMSE?</h6>
                 <p class="text-muted small mb-0">
-                    Root Mean Square Error — measures average prediction error in minutes.
-                    Lower is better. This model's predictions are off by about 3.80 minutes on average.
+                    Root Mean Square Error — measures prediction error in minutes, 
+                    penalising larger errors more heavily than small ones. Lower is better.
+                    Its value exceeds the MAE when occasional large errors are present.
                 </p>
             </div>
         </div>
@@ -911,7 +912,7 @@
                     <i class="bi bi-bar-chart" style="color: var(--dp-accent);"></i>
                     SHAP Feature Importance — LightGBM
                 </h5>
-                <p class="text-muted small mb-3">Mean absolute SHAP values computed on 500 training samples.</p>
+                <p class="text-muted small mb-3">Mean absolute SHAP values computed on 500 test samples.</p>
                 <div style="height: 400px;"><canvas id="featureChart"></canvas></div>
             </div>
         </div>
@@ -929,7 +930,7 @@
                     <li><span class="dp-finding-rank">03</span>
                         <span><strong>distance_km</strong> — longer distances directly increase delivery time.</span></li>
                     <li><span class="dp-finding-rank">04</span>
-                        <span><strong>delivery_person_ratings</strong> — rider rating has the strongest impact; higher-rated riders deliver faster.</span></li>
+                        <span><strong>delivery_person_ratings</strong> — rider rating is a leading factor; higher-rated riders deliver faster.</span></li>
                     <li><span class="dp-finding-rank">05</span>
                         <span><strong>vehicle_condition</strong> — vehicle condition affects rider reliability.</span></li>
                 </ul>
