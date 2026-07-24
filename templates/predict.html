@@ -165,7 +165,7 @@
                             <label class="form-label">Distance (km)</label>
                             <input type="number" class="form-control"
                                    id="distance_km" value="5.0"
-                                   step="0.1" min="0.1" max="25">
+                                   step="0.1" min="0.5" max="25">
                         </div>
 
                         <div class="col-md-6">
@@ -462,7 +462,7 @@ function validateInputs() {
         { id: 'prep_time_min',           min: 5,   max: 30,  label: 'Preparation Time', unit: 'min' },
         { id: 'delivery_person_age',     min: 18,  max: 60,  label: 'Rider Age',        unit: 'years' },
         { id: 'delivery_person_ratings', min: 2.5, max: 5.0, label: 'Rider Rating',     unit: '' },
-        { id: 'distance_km',             min: 0.5, max: 30, label: 'Distance',         unit: 'km' }
+        { id: 'distance_km',             min: 0.5, max: 25, label: 'Distance',         unit: 'km' }
     ];
 
     let allValid     = true;
@@ -533,9 +533,8 @@ async function predict() {
             '<div class="dp-mono small mb-3" style="color:#FFC857;">' +
             '<i class="bi bi-exclamation-triangle-fill"></i> ' +
             distance + ' km exceeds the training range. ' +
-            '99% of training data is below 21 km — predictions ' +
-            'above 25 km may be unreliable. Please enter a ' +
-            'distance between 1–25 km.</div>';
+            'Please enter a ' +
+            'distance between 0.5–25 km.</div>';
         return;
     }
 

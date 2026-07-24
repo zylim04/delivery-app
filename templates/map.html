@@ -373,7 +373,6 @@ function calculateDistance() {
         warningEl.innerHTML =
             '<i class="bi bi-exclamation-triangle-fill"></i> ' +
             '<strong>Warning:</strong> ' + dist + ' km exceeds the model training range. ' +
-            '99% of training data is below 21 km. ' +
             'Consider selecting locations closer together for reliable predictions.';
     } else {
         document.getElementById('distance-warning').style.display = 'none';
